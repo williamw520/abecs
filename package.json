@@ -1,0 +1,40 @@
+{
+    "name": "Abecs",
+    "title": "Array-based entity component system",
+    "version": "0.1.0",
+    "description": "Array-based entity component system",
+    "keywords": [
+        "ecs",
+        "entity",
+        "component",
+        "system",
+        "entity component",
+        "entity component system"
+    ],
+    "author": "William Wong <williamw520@gmail.com>",
+    "main": "abecs",
+    "engines": {
+        "node": ">= 13.0.0"
+    },
+    "private": false,
+    "readmeFilename": "README.md",
+    "license": "BSD",
+    "scripts": {
+        "test": "ava"
+    },
+    "devDependencies": {
+        "ava": "^3.13.0",
+        "esm": "^3.2.25",
+        "gulp": "^4.0.2",
+        "gulp-rename": "^2.0.0",
+        "gulp-uglify-es": "^2.0.0",
+        "gulp-header": "^2.0.9",
+        "microtime": "^3.0.0",
+        "seedrandom": "^3.0.5"
+    },
+    "ava": {
+        "require": [
+            "esm"
+        ]
+    }
+}
