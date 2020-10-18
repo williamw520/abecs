@@ -41,14 +41,14 @@ test("test1", t => {
     t.is(s.isOn(e0, dir), false);
 
     s.setValue(e0, alive, 10);
-    t.is(s.valueAt(e0, alive), 10);
+    t.is(s.getValue(e0, alive), 10);
 
     s.setValue(e0, alive, 11);
-    t.is(s.valueAt(e0, alive), 11);
+    t.is(s.getValue(e0, alive), 11);
 
     s.setValue(e0, pos, 100);
-    s.setValueSlot(e0, pos, 1, 101);
-    s.setValueSlot(e0, pos, 2, 102);
+    s.setSlot(e0, pos, 1, 101);
+    s.setSlot(e0, pos, 2, 102);
 
     let e1 = s.allocateEntity();
     s.componentOn(e1, dir)
@@ -60,31 +60,40 @@ test("test1", t => {
     t.is(s.isOn(e1, dir), true);
 
     s.setValue(e1, pos, 110);
-    s.setValueSlot(e1, pos, 1, 111);
-    s.setValueSlot(e1, pos, 2, 112);
-    
-    t.is(s.getEntities(alive).length, 1);
-    t.is(s.getEntities(pos).length, 2);
-    t.is(s.getEntities(dir).length, 1);
+    s.setSlot(e1, pos, 1, 111);
+    s.setSlot(e1, pos, 2, 112);
 
+    t.is(s.toEntities(alive).length, 1);
+    t.is(s.toEntities(pos).length, 2);
+    t.is(s.toEntities(dir).length, 1);
+
+    s.setComponentValue(e0, pos, 100);
+    s.setComponentSlot(e0, pos, 1, 101);
+    s.setComponentSlot(e0, pos, 2, 102);
+    t.is(s.getSlot(e0, pos, 0), 100);
+    t.is(s.getSlot(e0, pos, 1), 101);
+    t.is(s.getSlot(e0, pos, 2), 102);
+    
     s.iterate(alive, (ss, eid) => t.is(eid == 0, true));
     s.iterate(pos,   (ss, eid) => t.is(eid == 0 || eid == 1, true));
     s.iterate(dir,   (ss, eid) => t.is(eid == 1, true));
 
-    t.is(s.getValues(alive)[0], 11);
-    t.is(s.getValues(pos)[0], 100);
-    t.is(s.getValues(pos)[1], 110);
+    t.is(s.toValues(alive)[0], 11);
+    t.is(s.toValues(pos)[0], 100);
+    t.is(s.toValues(pos)[1], 110);
 
     s.iterate(pos,   (ss, eid) => {
         t.is(eid == 0 || eid == 1, true);
-        let v0 = ss.valueAtSlot(eid, pos, 0);
+        let v0 = ss.getSlot(eid, pos, 0);
         t.is(v0 == 100 || v0 == 110, true);
-        let v1 = ss.valueAtSlot(eid, pos, 1);
+        let v1 = ss.getSlot(eid, pos, 1);
         t.is(v1 == 101 || v1 == 111, true);
-        let v2 = ss.valueAtSlot(eid, pos, 2);
+        let v2 = ss.getSlot(eid, pos, 2);
         t.is(v2 == 102 || v2 == 112, true);
     });
-    
+
+    t.throws( () => { s.getSlot(e1, pos, 3) }, null, "Slot index is out of bound" );
+
 });
 
 

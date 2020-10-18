@@ -6,6 +6,10 @@
 import {BitVec} from "./lib/bitvec.js";
 
 
+const ENABLE_SLOT_PARAM_CHECK = true;           // Note: Enabling check causes a branching test, that results in 3 times slowdown in getSlot()/setSlot().
+//const ENABLE_SLOT_PARAM_CHECK = false;
+
+
 // abecs module, the entry point to the ABECS.
 let abecs = (function() {
     const abecs = {};
@@ -24,6 +28,7 @@ let abecs = (function() {
 
             this._arrayTypes = [];              // the array type of the component data array.
             this._componentNameIds = {};        // map between component name and component id.
+            this._componentIdNames = {};        // map between component id and component name.
             this._slotsPerEntity = [];          // the slots per entity for each component.
 
             // inuse: ..111.11.11..
@@ -47,17 +52,22 @@ let abecs = (function() {
         // @return componentId
         registerComponent(componentName, componentArrayType, slotsPerEntity) {
             if (validArrayTypes.indexOf(componentArrayType) == -1)
-                throw Error("Unsupported component array type " + componentArrayType);
+                throw Error("Unsupported component array type " + componentArrayType + " for component " + componentName);
             if ((slotsPerEntity || 1) < 1)
-                throw Error("Invalid argument for slotsPerEntity " + slotsPerEntity);
+                throw Error("Invalid argument for slotsPerEntity " + slotsPerEntity + " for component " + componentName);
 
             let componentId = this._arrayTypes.length;
             this._componentNameIds[componentName] = componentId;
+            this._componentIdNames[componentId] = componentName;
             this._arrayTypes.push(componentArrayType);
             this._slotsPerEntity.push((slotsPerEntity || 1));
             return componentId;
         }
 
+        // Re-build all the entity, component, and value arrays.
+        // All previous data are removed.  It's an effective reset.
+        //
+        // entityCount - The number of entities to allocate space for the arrays.
         build(entityCount) {
             this._entityCount = entityCount ? entityCount : this._entityCount;
 
@@ -82,6 +92,8 @@ let abecs = (function() {
         get componentCount()    { return this._arrayTypes.length }
 
         componentId(name)       { return this._componentNameIds[name] }
+
+        componentName(cid)      { return this._componentIdNames[cid] }
 
         arrayType(componentId)  { return this._arrayTypes[componentId] }
 
@@ -125,12 +137,12 @@ let abecs = (function() {
             return this;
         }
 
-        valueAt(entityId, componentId) {
+        getValue(entityId, componentId) {
             let slotIndex = entityId * this.slotCount(componentId);
             return this._componentData[componentId][slotIndex];
         }
 
-        valueAtSlot(entityId, componentId, slot) {
+        getSlot(entityId, componentId, slot) {
             let slotCount = this._checkParamOnSlotCount(componentId, slot);
             let slotIndex = entityId * slotCount + slot;
             return this._componentData[componentId][slotIndex];
@@ -142,19 +154,19 @@ let abecs = (function() {
             return this;
         }
 
-        setValueSlot(entityId, componentId, slot, value) {
+        setSlot(entityId, componentId, slot, value) {
             let slotCount = this._checkParamOnSlotCount(componentId, slot);
             let slotIndex = entityId * slotCount + slot;
             this._componentData[componentId][slotIndex] = value;
             return this;
         }
 
-        componentValue(entityId, componentId, value) {
+        setComponentValue(entityId, componentId, value) {
             return this.componentOn(entityId, componentId).setValue(entityId, componentId, value);
         }
 
-        componentValueSlot(entityId, componentId, slot, value) {
-            return this.componentOn(entityId, componentId).setValueSlot(entityId, componentId, slot, value);
+        setComponentSlot(entityId, componentId, slot, value) {
+            return this.componentOn(entityId, componentId).setSlot(entityId, componentId, slot, value);
         }
 
         // Iterate over all entities which are active on the component, mainly for applying a system funcion over the entities.
@@ -174,12 +186,12 @@ let abecs = (function() {
         // the entityId, and the component value of the first slot.
         // No memory allocation during iteration.
         iterateValues(componentId, systemHandler) {
-            this.iterate(componentId, (scene, entityId) => systemHandler(scene, entityId, scene.valueAt(entityId, componentId)) );
+            this.iterate(componentId, (scene, entityId) => systemHandler(scene, entityId, scene.getValue(entityId, componentId)) );
         }
 
         // Return an array of entity ids whose entities are active with the component.
         // Note: the new array causes memory allocation.
-        getEntities(componentId) {
+        toEntities(componentId) {
             let entityIds = [];
             this.iterate(componentId, (_, entityId) => entityIds.push(entityId));
             return entityIds;
@@ -187,7 +199,7 @@ let abecs = (function() {
 
         // Return a map of component values keyed with entityId, which are active with the component.
         // Note: the new array causes memory allocation.
-        getValues(componentId) {
+        toValues(componentId) {
             let valueMap = {}
             this.iterateValues(componentId, (_, entityId, value) => valueMap[entityId] = value);
             return valueMap;
@@ -195,8 +207,9 @@ let abecs = (function() {
 
         _checkParamOnSlotCount(componentId, slot) {
             const slotCount = this.slotCount(componentId);
-            if (slot >= slotCount)
-                throw Error("Slot index " + slot + " exceeds the slot count " + slotCount);
+            // Note: Enabling the check causes a branching test, that results in 3 times slowdown in the getSlot()/setSlot() benchmark.
+            if (ENABLE_SLOT_PARAM_CHECK && slot >= slotCount)
+                throw Error(`Slot index ${slot} is out of bound for the component "${ this.componentName(componentId) }" with a slot count of ${slotCount}`);
             return slotCount;
         }
 
