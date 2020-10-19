@@ -33,6 +33,7 @@ let abecs = (function() {
             this._componentNameIds = {};        // map between component name and component id.
             this._componentIdNames = {};        // map between component id and component name.
             this._slotsPerEntity = [];          // the slots per entity for each component.
+            this._systemFns = [];               // system handlers for the components.
 
             // inuse: ..111.11.11..
             // comp1: ....1.1..11..
@@ -69,6 +70,11 @@ let abecs = (function() {
             return componentId;
         }
 
+        registerSystem(componentId, systemFn) {
+            this._systemFns[componentId] = systemFn;
+            return this;
+        }
+
         // Re-build all the entity, component, and value arrays.
         // All previous data are removed.  It's an effective reset.
         //
@@ -82,11 +88,11 @@ let abecs = (function() {
             this._componentData = [];
             this._memorizers = {};
             this._entitiesGetters = {};
-            for (let cidx = 0; cidx < this.componentCount; cidx++) {
-                let totalSlots = this.entityCount * this._slotsPerEntity[cidx];
-                this._componentData.push(new this._arrayTypes[cidx](totalSlots));
-                this._memorizers[cidx] = this._memorizeGetter.bind(this, cidx);
-                this._resetGetter(cidx);
+            for (let cid = 0; cid < this.componentCount; cid++) {
+                let totalSlots = this.entityCount * this._slotsPerEntity[cid];
+                this._componentData.push(new this._arrayTypes[cid](totalSlots));
+                this._memorizers[cid] = this._memorizeGetter.bind(this, cid);
+                this._resetGetter(cid);
             }
 
             this._hasBuilt = true;
@@ -108,6 +114,8 @@ let abecs = (function() {
 
         slotCount(componentId)  { return this._slotsPerEntity[componentId] }
 
+        systemHandler(cid)      { return this._systemFns[cid] }
+
         allocateEntity() {
             let entityId = this._entityInUse.nextOff(this._lowestFreeId);
             if (entityId >= 0) {
@@ -120,9 +128,9 @@ let abecs = (function() {
         freeEntity(entityId) {
             this._entityInUse.bitOff(entityId);
             // Mark all components of the entity inactive to avoid the game loop updating/rendering the freed entity.
-            for (let cidx = 0; cidx < this.componentCount; cidx++) {
-                this._activeComponents[cidx].bitOff(entityId);
-                this._resetGetter(cidx);
+            for (let cid = 0; cid < this.componentCount; cid++) {
+                this._activeComponents[cid].bitOff(entityId);
+                this._resetGetter(cid);
             }
             if (entityId < this._lowestFreeId) {
                 this._lowestFreeId = entityId;
@@ -182,12 +190,12 @@ let abecs = (function() {
         }
 
         // Iterate over all entities with the active component on.
-        // Call back on the systemHandler for each entity, with parameters of this ABScene object and the entityId.
+        // Call back on the systemFn for each entity, with parameters of this ABScene object and the entityId.
         // No memory allocation during iteration.
-        iterate(componentId, systemHandler) {
+        iterate(componentId, systemFn, ctx) {
             let bitvec = this._activeComponents[componentId];
             for (let entityId = 0; (entityId = bitvec.nextOn(entityId)) != -1; entityId++) {
-                systemHandler(this, entityId);
+                systemFn(this, entityId, componentId, ctx);
             }
         }
 
@@ -224,6 +232,15 @@ let abecs = (function() {
         // Note: the new array causes memory allocation.
         toSlotValues(componentId, slot) {
             return this.getEntities(componentId).reduce( (map, eId) => (map[eId] = this.getSlot(eId, componentId, slot), map), {});
+        }
+
+        applySystems(ctx) {
+            for (let cid = 0; cid < this._systemFns.length; cid++) {
+                let systemFn = this._systemFns[cid];
+                if (systemFn) {
+                    this.getEntities(cid).forEach( eid => systemFn(this, eid, cid, ctx) );
+                }
+            }
         }
 
         _checkParamOnSlotCount(componentId, slot) {

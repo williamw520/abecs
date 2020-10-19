@@ -102,7 +102,16 @@ test("test1", t => {
     s.getEntities(pos);
     s.getEntities(pos);
     s.getEntities(pos);
-    
+
+    s.registerSystem(alive, (ss, eid, cid, ctx) => {
+        console.log("sys " + eid + " " + cid + " " + ctx);
+    }).registerSystem(pos, (ss, eid, cid, ctx) => {
+        console.log("sys " + eid + " " + cid + " " + ctx);
+    }).registerSystem(dir, (ss, eid, cid, ctx) => {
+        console.log("sys " + eid + " " + cid + " " + ctx);
+    });
+
+    s.applySystems("abc");
 
     t.throws( () => { s.getSlot(e1, pos, 3) }, null, "Slot index is out of bound" );
 
