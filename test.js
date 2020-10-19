@@ -63,9 +63,9 @@ test("test1", t => {
     s.setSlot(e1, pos, 1, 111);
     s.setSlot(e1, pos, 2, 112);
 
-    t.is(s.toEntities(alive).length, 1);
-    t.is(s.toEntities(pos).length, 2);
-    t.is(s.toEntities(dir).length, 1);
+    t.is(s._toEntities(alive).length, 1);
+    t.is(s._toEntities(pos).length, 2);
+    t.is(s._toEntities(dir).length, 1);
 
     s.setComponentValue(e0, pos, 100);
     s.setComponentSlot(e0, pos, 1, 101);
@@ -91,6 +91,18 @@ test("test1", t => {
         let v2 = ss.getSlot(eid, pos, 2);
         t.is(v2 == 102 || v2 == 112, true);
     });
+
+    s.getEntities(pos);
+    s.getEntities(pos);
+    s.getEntities(pos);
+    s.getEntities(pos);
+    s.getEntities(pos);
+
+    s._resetGetter(pos);
+    s.getEntities(pos);
+    s.getEntities(pos);
+    s.getEntities(pos);
+    
 
     t.throws( () => { s.getSlot(e1, pos, 3) }, null, "Slot index is out of bound" );
 

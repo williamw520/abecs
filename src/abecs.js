@@ -5,6 +5,9 @@
 
 import {BitVec} from "./lib/bitvec.js";
 
+// TODO:
+//  Register system handler per component.
+
 
 const ENABLE_SLOT_PARAM_CHECK = true;           // Note: Enabling check causes a branching test, that results in 3 times slowdown in getSlot()/setSlot().
 //const ENABLE_SLOT_PARAM_CHECK = false;
@@ -38,6 +41,8 @@ let abecs = (function() {
             this._entityInUse = null;           // the bit vector tracking which entity is used and which is free.
             this._activeComponents = [];        // one bit vector per component to track the active state of the component to entities.
             this._componentData = [];           // the component data arrays.
+            this._memorizers = {};
+            this._entitiesGetters = {};
         }
 
         // componentName - descriptive component name; should be unique, for looking up the component id.
@@ -75,9 +80,13 @@ let abecs = (function() {
             this._activeComponents  = range(0, this.componentCount).map( _ => new BitVec(this.entityCount) );
 
             this._componentData = [];
+            this._memorizers = {};
+            this._entitiesGetters = {};
             for (let cidx = 0; cidx < this.componentCount; cidx++) {
                 let totalSlots = this.entityCount * this._slotsPerEntity[cidx];
                 this._componentData.push(new this._arrayTypes[cidx](totalSlots));
+                this._memorizers[cidx] = this._memorizeGetter.bind(this, cidx);
+                this._resetGetter(cidx);
             }
 
             this._hasBuilt = true;
@@ -113,6 +122,7 @@ let abecs = (function() {
             // Mark all components of the entity inactive to avoid the game loop updating/rendering the freed entity.
             for (let cidx = 0; cidx < this.componentCount; cidx++) {
                 this._activeComponents[cidx].bitOff(entityId);
+                this._resetGetter(cidx);
             }
             if (entityId < this._lowestFreeId) {
                 this._lowestFreeId = entityId;
@@ -129,11 +139,13 @@ let abecs = (function() {
 
         componentOn(entityId, componentId) {
             this._activeComponents[componentId].bitOn(entityId);
+            this._resetGetter(componentId);
             return this;
         }
 
         componentOff(entityId, componentId) {
             this._activeComponents[componentId].bitOff(entityId);
+            this._resetGetter(componentId);
             return this;
         }
 
@@ -169,40 +181,49 @@ let abecs = (function() {
             return this.componentOn(entityId, componentId).setSlot(entityId, componentId, slot, value);
         }
 
-        // Iterate over all entities which are active on the component, mainly for applying a system funcion over the entities.
+        // Iterate over all entities with the active component on.
         // Call back on the systemHandler for each entity, with parameters of this ABScene object and the entityId.
         // No memory allocation during iteration.
         iterate(componentId, systemHandler) {
             let bitvec = this._activeComponents[componentId];
-            let entityId = 0;
-            while ((entityId = bitvec.nextOn(entityId)) != -1) {
+            for (let entityId = 0; (entityId = bitvec.nextOn(entityId)) != -1; entityId++) {
                 systemHandler(this, entityId);
-                entityId++;
             }
         }
 
-        // Iterate over all entities which are active on the component, mainly for applying system funcion over the entities.
-        // Call back on the systemHandler for each entity, with parameters of this ABScene object,
-        // the entityId, and the component value of the first slot.
-        // No memory allocation during iteration.
-        iterateValues(componentId, systemHandler) {
-            this.iterate(componentId, (scene, entityId) => systemHandler(scene, entityId, scene.getValue(entityId, componentId)) );
+        getEntities(componentId) {
+            return this._entitiesGetters[componentId]();
         }
 
-        // Return an array of entity ids whose entities are active with the component.
-        // Note: the new array causes memory allocation.
-        toEntities(componentId) {
+        _resetGetter(componentId) {
+            this._entitiesGetters[componentId] = this._memorizers[componentId];
+        }
+
+        _memorizeGetter(componentId) {
+            console.log("_memorizeGetter " + componentId);
+            const cachedEntityIds = this._toEntities(componentId);
+            this._entitiesGetters[componentId] = () => cachedEntityIds;
+            return cachedEntityIds;
+        }
+
+        // Return an array of entity ids whose entities with the active component on.
+        // Note: allocating a new array.
+        _toEntities(componentId) {
             let entityIds = [];
-            this.iterate(componentId, (_, entityId) => entityIds.push(entityId));
+            this.iterate(componentId, (_, eId) => entityIds.push(eId));
             return entityIds;
         }
 
-        // Return a map of component values keyed with entityId, which are active with the component.
+        // Return a map of component values keyed with entityId with the active component on.
         // Note: the new array causes memory allocation.
         toValues(componentId) {
-            let valueMap = {}
-            this.iterateValues(componentId, (_, entityId, value) => valueMap[entityId] = value);
-            return valueMap;
+            return this.getEntities(componentId).reduce( (map, eId) => (map[eId] = this.getValue(eId, componentId), map), {});
+        }
+
+        // Return a map of component slot values keyed with entityId with the active component on.
+        // Note: the new array causes memory allocation.
+        toSlotValues(componentId, slot) {
+            return this.getEntities(componentId).reduce( (map, eId) => (map[eId] = this.getSlot(eId, componentId, slot), map), {});
         }
 
         _checkParamOnSlotCount(componentId, slot) {
