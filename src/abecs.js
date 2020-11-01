@@ -208,7 +208,7 @@ let abecs = (function() {
         }
 
         _memorizeGetter(componentId) {
-            console.log("_memorizeGetter " + componentId);
+            //console.log("_memorizeGetter " + componentId);
             const cachedEntityIds = this._toEntities(componentId);
             this._entitiesGetters[componentId] = () => cachedEntityIds;
             return cachedEntityIds;
@@ -238,7 +238,10 @@ let abecs = (function() {
             for (let cid = 0; cid < this._systemFns.length; cid++) {
                 let systemFn = this._systemFns[cid];
                 if (systemFn) {
-                    this.getEntities(cid).forEach( eid => systemFn(this, eid, cid, ctx) );
+                    let entities = this.getEntities(cid);
+                    for (let eid = 0; eid < entities.length; eid++) {
+                        systemFn(this, eid, cid, ctx)
+                    }
                 }
             }
         }

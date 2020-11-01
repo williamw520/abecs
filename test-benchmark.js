@@ -12,12 +12,14 @@ import abecs from "./src/abecs.js";
 
 function logtime(tag, mt1, mt2, entityCount, iteration) {
     let elapse = mt2 - mt1;
-    let rate = Math.floor( iteration / (elapse || 1) * 1000000 );
-    let msg = (tag + " - ").padEnd(26, " ") +
-        "entities: " + (entityCount.toLocaleString() + "; ").padEnd(10, " ") +
-        "pass: " + (iteration.toLocaleString() + "; ").padEnd(13, " ") +
-        "time: " + elapse.toLocaleString() + "us; " +
-        "rate: " + rate.toLocaleString() + " op/sec";
+    let ops_rate = Math.floor( iteration / (elapse || 1) * 1000000 );
+    let item_rate = Math.floor( (entityCount * iteration) / (elapse || 1) * 1000000 );
+    let msg = (tag + " ").padEnd(26, " ") +
+        " entities: " + (entityCount.toLocaleString()).padEnd(9, " ") +
+        " pass: " + (iteration.toLocaleString()).padEnd(12, " ") +
+        " time: " + (elapse.toLocaleString() + "us").padEnd(11, " ") +
+        " passes/sec: " + ops_rate.toLocaleString().padEnd(12, " ") +
+        " items/sec: " + item_rate.toLocaleString();
     console.log(msg);
 }
 
@@ -26,7 +28,7 @@ test("benchmark", t => {
     let mt1, mt2, iteration, entityCount = 100000;
 
     let s = abecs.newScene();
-    let alive = s.registerComponent("alive", Uint8Array);
+    let health = s.registerComponent("health", Uint8Array);
     let pos = s.registerComponent("pos", Float32Array, 3);
     let dir = s.registerComponent("dir", Float32Array, 3);
 
@@ -35,249 +37,378 @@ test("benchmark", t => {
     t.is(s.hasBuilt, true);
 
 
-    // iteration = 100000000;
+    iteration = 100000000;
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.isInUse(0);
-    // logtime("isInUse 0", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.isInUse(0);
+    logtime("isInUse 0", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.isInUse(1);
-    // logtime("isInUse 1", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.isInUse(1);
+    logtime("isInUse 1", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.isInUse(99999);
-    // logtime("isInUse 99999", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.isInUse(99999);
+    logtime("isInUse 99999", mt1, microtime.now(), entityCount, iteration);
 
-    // for (let k = 0; k < entityCount; k++)
-    //     s.allocateEntity();
+    for (let k = 0; k < entityCount; k++)
+        s.allocateEntity();
     
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.isInUse(99999);
-    // logtime("isInUse+allocate 99999", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.isInUse(99999);
+    logtime("isInUse+allocate 99999", mt1, microtime.now(), entityCount, iteration);
 
 
-    // iteration = 100000000;
+    iteration = 100000000;
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.isOn(0, alive);
-    // logtime("isOn 0", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.isOn(0, health);
+    logtime("isOn 0", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.isOn(1, pos);
-    // logtime("isOn 1", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.isOn(1, pos);
+    logtime("isOn 1", mt1, microtime.now(), entityCount, iteration);
 
 
-    // iteration = 1000;
+    iteration = 1000;
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     for (let k = 0; k < entityCount; k++)
-    //         s.componentOn(k, alive);
-    // logtime("compOn " + entityCount + " alive", mt1, microtime.now(), entityCount, iteration * entityCount);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        for (let k = 0; k < entityCount; k++)
+            s.componentOn(k, health);
+    logtime("compOn " + entityCount + " health", mt1, microtime.now(), entityCount, iteration * entityCount);
     
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     for (let k = 0; k < entityCount; k++)
-    //         s.componentOn(k, pos);
-    // logtime("compOn " + entityCount + " pos:3", mt1, microtime.now(), entityCount, iteration * entityCount);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        for (let k = 0; k < entityCount; k++)
+            s.componentOn(k, pos);
+    logtime("compOn " + entityCount + " pos:3", mt1, microtime.now(), entityCount, iteration * entityCount);
 
 
-    // iteration = 200000000;
+    iteration = 200000000;
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.setValue(0, alive, 10);
-    // logtime("setValue 0 alive", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.setValue(0, health, 10);
+    logtime("setValue 0 health", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.setValue(1, pos, 100);
-    // logtime("setValue 1 pos", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.setValue(1, pos, 100);
+    logtime("setValue 1 pos", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.setValue(99999, pos, 999990);
-    // logtime("setValue 99999 pos:3", mt1, microtime.now(), entityCount, iteration);
-
-
-    // iteration = 200000000;
-
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.getValue(0, alive);
-    // logtime("getValue 0 alive", mt1, microtime.now(), entityCount, iteration);
-
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.getValue(1, pos);
-    // logtime("getValue 1 pos:3", mt1, microtime.now(), entityCount, iteration);
-
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.getValue(99999, pos);
-    // logtime("getValue 99999 pos:3", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.setValue(99999, pos, 999990);
+    logtime("setValue 99999 pos:3", mt1, microtime.now(), entityCount, iteration);
 
 
-    // iteration = 200000000;
+    iteration = 200000000;
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.setSlot(0, alive, 0, 10);
-    // logtime("setSlot 0 alive[0]", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.getValue(0, health);
+    logtime("getValue 0 health", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.setSlot(1, pos, 0, 100);
-    // logtime("setSlot 1 pos[0]", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.getValue(1, pos);
+    logtime("getValue 1 pos:3", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.setSlot(1, pos, 1, 101);
-    // logtime("setSlot 1 pos[1]", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.getValue(99999, pos);
+    logtime("getValue 99999 pos:3", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.setSlot(1, pos, 2, 102);
-    // logtime("setSlot 1 pos[2]", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.setSlot(99999, pos, 0, 999990);
-    // logtime("setSlot 99999 pos[0]", mt1, microtime.now(), entityCount, iteration);
+    iteration = 200000000;
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.setSlot(99999, pos, 1, 999991);
-    // logtime("setSlot 99999 pos[1]", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.setSlot(0, health, 0, 10);
+    logtime("setSlot 0 health[0]", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.setSlot(99999, pos, 2, 999992);
-    // logtime("setSlot 99999 pos[2]", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.setSlot(1, pos, 0, 100);
+    logtime("setSlot 1 pos[0]", mt1, microtime.now(), entityCount, iteration);
+
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.setSlot(1, pos, 1, 101);
+    logtime("setSlot 1 pos[1]", mt1, microtime.now(), entityCount, iteration);
+
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.setSlot(1, pos, 2, 102);
+    logtime("setSlot 1 pos[2]", mt1, microtime.now(), entityCount, iteration);
+
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.setSlot(99999, pos, 0, 999990);
+    logtime("setSlot 99999 pos[0]", mt1, microtime.now(), entityCount, iteration);
+
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.setSlot(99999, pos, 1, 999991);
+    logtime("setSlot 99999 pos[1]", mt1, microtime.now(), entityCount, iteration);
+
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.setSlot(99999, pos, 2, 999992);
+    logtime("setSlot 99999 pos[2]", mt1, microtime.now(), entityCount, iteration);
 
     
-    // iteration = 200000000;
+    iteration = 200000000;
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.getSlot(0, alive, 0);
-    // logtime("getSlot 0 alive[0]", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.getSlot(0, health, 0);
+    logtime("getSlot 0 health[0]", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.getSlot(1, pos, 0);
-    // logtime("getSlot 1 pos[0]", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.getSlot(1, pos, 0);
+    logtime("getSlot 1 pos[0]", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.getSlot(1, pos, 1);
-    // logtime("getSlot 1 pos[1]", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.getSlot(1, pos, 1);
+    logtime("getSlot 1 pos[1]", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.getSlot(1, pos, 2);
-    // logtime("getSlot 1 pos[2]", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.getSlot(1, pos, 2);
+    logtime("getSlot 1 pos[2]", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.getSlot(99999, pos, 0);
-    // logtime("getSlot 99999 pos[0]", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.getSlot(99999, pos, 0);
+    logtime("getSlot 99999 pos[0]", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.getSlot(99999, pos, 1);
-    // logtime("getSlot 99999 pos[1]", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.getSlot(99999, pos, 1);
+    logtime("getSlot 99999 pos[1]", mt1, microtime.now(), entityCount, iteration);
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.getSlot(99999, pos, 2);
-    // logtime("getSlot 99999 pos[2]", mt1, microtime.now(), entityCount, iteration);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.getSlot(99999, pos, 2);
+    logtime("getSlot 99999 pos[2]", mt1, microtime.now(), entityCount, iteration);
 
     
     iteration = 1000;
 
     for (let k = 0; k < entityCount; k++)
-        s.componentOn(k, alive);
+        s.componentOn(k, health);
     mt1 = microtime.now();
     for (let i = 0; i < iteration; i++)
-        s.iterate(alive, () => {});
-    logtime("iterate alive all-on", mt1, microtime.now(), entityCount, iteration);
+        s.iterate(health, () => {});
+    logtime("iterate health all-on", mt1, microtime.now(), entityCount, iteration);
 
 
     iteration = 100000;
     
     for (let k = 0; k < entityCount; k++)
-        s.componentOff(k, alive);
+        s.componentOff(k, health);
     mt1 = microtime.now();
     for (let i = 0; i < iteration; i++)
-        s.iterate(alive, () => {});
-    logtime("iterate alive all-off", mt1, microtime.now(), entityCount, iteration);
+        s.iterate(health, () => {});
+    logtime("iterate health all-off", mt1, microtime.now(), entityCount, iteration);
 
 
     iteration = 500000000;
 
     for (let k = 0; k < entityCount; k++)
-        s.componentOn(k, alive);
+        s.componentOn(k, health);
     mt1 = microtime.now();
     for (let i = 0; i < iteration; i++)
-        s.getEntities(alive);
-    logtime("getEntities alive on", mt1, microtime.now(), entityCount, iteration);
-    t.is(s.getEntities(alive).length, entityCount);
+        s.getEntities(health);
+    logtime("getEntities health on", mt1, microtime.now(), entityCount, iteration);
+    t.is(s.getEntities(health).length, entityCount);
 
 
     iteration = 100000000;
 
     for (let k = 0; k < entityCount; k++)
-        s.componentOff(k, alive);
+        s.componentOff(k, health);
     mt1 = microtime.now();
     for (let i = 0; i < iteration; i++)
-        s.getEntities(alive);
-    logtime("getEntities alive on2", mt1, microtime.now(), entityCount, iteration);
-    t.is(s.getEntities(alive).length, 0);
+        s.getEntities(health);
+    logtime("getEntities health on2", mt1, microtime.now(), entityCount, iteration);
+    t.is(s.getEntities(health).length, 0);
 
 
-    // iteration = 1000;
+    iteration = 1000;
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++)
-    //     s.build(entityCount);
-    // logtime("build " + entityCount, mt1, microtime.now(), entityCount, iteration);
-
-
-    // iteration = 1000;
-
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++) {
-    //     for (let k = 0; k < entityCount; k++)
-    //         s.allocateEntity();
-    // }
-    // logtime("allocateEntity " + entityCount, mt1, microtime.now(), entityCount, iteration * entityCount);
-
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++) {
-    //     for (let k = 0; k < entityCount; k++)
-    //         s.allocateEntity();
-    //     s.build(entityCount);
-    // }
-    // logtime("allocate+build " + entityCount, mt1, microtime.now(), entityCount, iteration * entityCount);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.build(entityCount);
+    logtime("build " + entityCount, mt1, microtime.now(), entityCount, iteration);
 
 
-    // iteration = 200;
+    iteration = 1000;
 
-    // mt1 = microtime.now();
-    // for (let i = 0; i < iteration; i++) {
-    //     for (let k = 0; k < entityCount; k++)
-    //         s.freeEntity(k);
-    // }
-    // logtime("freeEntity " + entityCount, mt1, microtime.now(), entityCount, iteration * entityCount);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++) {
+        for (let k = 0; k < entityCount; k++)
+            s.allocateEntity();
+    }
+    logtime("allocateEntity " + entityCount, mt1, microtime.now(), entityCount, iteration * entityCount);
+
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++) {
+        for (let k = 0; k < entityCount; k++)
+            s.allocateEntity();
+        s.build(entityCount);
+    }
+    logtime("allocate+build " + entityCount, mt1, microtime.now(), entityCount, iteration * entityCount);
+
+
+    iteration = 200;
+
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++) {
+        for (let k = 0; k < entityCount; k++)
+            s.freeEntity(k);
+    }
+    logtime("freeEntity " + entityCount, mt1, microtime.now(), entityCount, iteration * entityCount);
     
+    
+});
+
+
+test("system-fn", t => {
+    let mt1, mt2, iteration, entityCount = 1000000;
+
+    let s = abecs.newScene();
+    let health = s.registerComponent("health", Uint8Array);
+    let pos = s.registerComponent("pos", Float32Array, 3);
+    let dir = s.registerComponent("dir", Float32Array, 3);
+
+    t.is(s.hasBuilt, false);
+    s.build(entityCount);
+    t.is(s.hasBuilt, true);
+
+    for (let k = 0; k < entityCount; k++) {
+        let eid = s.allocateEntity();
+        s.componentOn(eid, health);
+        s.componentOn(eid, pos);
+        s.componentOn(eid, dir);
+    }
+    t.is(s.getEntities(health).length, entityCount);
+
+    let sysSetValue = (s, eid, cid, ctx) => {
+        s.setValue(eid, cid, 10);
+    };
+
+    let sysSetSpeed = (s, eid, cid, ctx) => {
+        s.setSlot(eid, pos, 0, 100);
+        s.setSlot(eid, pos, 1, 110);
+        s.setSlot(eid, pos, 2, 120);
+        s.setSlot(eid, dir, 0, 10);
+        s.setSlot(eid, dir, 1, 11);
+        s.setSlot(eid, dir, 2, 12);
+    };
+
+    let sysCalcSpeed = (s, eid, cid, ctx) => {
+        let x  = s.getSlot(eid, pos, 0);
+        let y  = s.getSlot(eid, pos, 1);
+        let z  = s.getSlot(eid, pos, 2);
+        let vx = s.getSlot(eid, dir, 0);
+        let vy = s.getSlot(eid, dir, 1);
+        let vz = s.getSlot(eid, dir, 2);
+        s.setSlot(eid, pos, 0, x + vx);
+        s.setSlot(eid, pos, 1, y + vx);
+        s.setSlot(eid, pos, 2, z + vx);
+    };
+    
+
+    iteration = 100;
+
+    s.registerSystem(health, sysSetValue);
+    // s.registerSystem(health, (s, eid, cid, ctx) => {
+    //     s.setValue(eid, cid, 10);
+    // });
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.applySystems();
+    logtime("applySys 1M nop", mt1, microtime.now(), entityCount, iteration);
+
+
+    iteration = 1000;
+
+    let sysfn = s.systemHandler(health);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++) {
+        let entities = s.getEntities(health);
+        for (let k = 0; k < entities.length; k++) {
+            sysfn(s, k, health);
+        }
+    }
+    logtime("loop 1M nop", mt1, microtime.now(), entityCount, iteration);
+
+
+    iteration = 1000;
+
+    s.registerSystem(health, sysSetValue);
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++)
+        s.applySystems();
+    logtime("applySys 1M setValue", mt1, microtime.now(), entityCount, iteration);
+
+
+    iteration = 1000;
+    
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++) {
+        let entities = s.getEntities(health);
+        for (let k = 0; k < entities.length; k++) {
+            s.setValue(k, health, 10);
+        }
+    }
+    logtime("loop 1M setValue", mt1, microtime.now(), entityCount, iteration);
+
+    
+    iteration = 50;
+    
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++) {
+        let entities = s.getEntities(health);
+        entities.forEach( eid => s.setValue(eid, health, 10) );
+    }
+    logtime("forEach 1M setValue", mt1, microtime.now(), entityCount, iteration);
+    
+
+    iteration = 50;
+    
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++) {
+        let entities = s.getEntities(health);
+        for (let k = 0; k < entities.length; k++) {
+            sysSetSpeed(s, k);
+        }
+    }
+    logtime("loop 1M sysSetSpeed", mt1, microtime.now(), entityCount, iteration);
+
+    
+    iteration = 50;
+    
+    mt1 = microtime.now();
+    for (let i = 0; i < iteration; i++) {
+        let entities = s.getEntities(health);
+        for (let k = 0; k < entities.length; k++) {
+            sysCalcSpeed(s, k);
+        }
+    }
+    logtime("loop 1M sysCalcSpeed", mt1, microtime.now(), entityCount, iteration);
+
     
 });
 
