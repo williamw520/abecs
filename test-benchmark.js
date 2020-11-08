@@ -20,8 +20,8 @@ function logheader() {
         "| Time ms ".padEnd(10, " ") +
         "| nanosec/op ".padEnd(13, " ") +
         "| ops/sec ".padEnd(17, " ") +
-        "| runs/frame ".padEnd(15, " ") +
-        "| FPS of runs ".padEnd(16, " ") +
+        "| Runs/frame ".padEnd(15, " ") +
+        "| FPS of Runs ".padEnd(16, " ") +
         "|";
     console.log(msg);
     msg = 
