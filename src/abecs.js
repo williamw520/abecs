@@ -157,6 +157,10 @@ let abecs = (function() {
             return this;
         }
 
+        componentOnCount(componentId) {
+            return this._activeComponents[componentId].cardinality();
+        }
+
         getValue(entityId, componentId) {
             let slotIndex = entityId * this.slotCount(componentId);
             return this._componentData[componentId][slotIndex];
@@ -244,6 +248,10 @@ let abecs = (function() {
                     }
                 }
             }
+        }
+
+        countSystems() {
+            return this._systemFns.filter( fn => fn ).length;
         }
 
         _checkParamOnSlotCount(componentId, slot) {

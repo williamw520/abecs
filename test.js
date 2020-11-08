@@ -55,6 +55,10 @@ test("test1", t => {
         .componentOn(e1, pos);
     t.is(e1, 1);
 
+    t.is(s.componentOnCount(health), 1);
+    t.is(s.componentOnCount(pos), 2);
+    t.is(s.componentOnCount(dir), 1);
+
     t.is(s.isOn(e1, health), false);
     t.is(s.isOn(e1, pos), true);
     t.is(s.isOn(e1, dir), true);
@@ -74,15 +78,15 @@ test("test1", t => {
     t.is(s.getSlot(e0, pos, 1), 101);
     t.is(s.getSlot(e0, pos, 2), 102);
     
-    s.iterate(health, (s, eid) => t.is(eid == 0, true));
-    s.iterate(pos,   (s, eid) => t.is(eid == 0 || eid == 1, true));
-    s.iterate(dir,   (s, eid) => t.is(eid == 1, true));
+    s.iterate(health,   (s, eid) => t.is(eid == 0, true));
+    s.iterate(pos,      (s, eid) => t.is(eid == 0 || eid == 1, true));
+    s.iterate(dir,      (s, eid) => t.is(eid == 1, true));
 
     t.is(s.toValues(health)[0], 11);
     t.is(s.toValues(pos)[0], 100);
     t.is(s.toValues(pos)[1], 110);
 
-    s.iterate(pos,   (s, eid) => {
+    s.iterate(pos,      (ss, eid) => {
         t.is(eid == 0 || eid == 1, true);
         let v0 = ss.getSlot(eid, pos, 0);
         t.is(v0 == 100 || v0 == 110, true);
