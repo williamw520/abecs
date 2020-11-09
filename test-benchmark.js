@@ -95,7 +95,7 @@ function logtime(tag, mt1, mt2, entityCount, runs, opsPerRun) {
 
 
 test("api", t => {
-
+    
     timeUnit = 0;          // Set time unit index to 0, for microseconds and nanoseconds
     
     console.log("\n");
@@ -380,7 +380,7 @@ test("api", t => {
 test("system-fn", t => {
 
     timeUnit = 1;          // Set time unit index to 1, for milliseconds and microseconds.
-    
+
     console.log("\n");
     console.log("=== Benchmark on System Functions ====\n");
     logheader();
@@ -605,6 +605,121 @@ test("system-fn", t => {
     dotests("2M",   2000000, 0.005);
     dotests("5M",   5000000, 0.002);
     dotests("10M",  10000000, 0.001);
+
+    t.pass();
+    
+});
+
+
+test("create-destroy", t => {
+
+    timeUnit = 1;          // Set time unit index to 0
+
+    console.log("\n");
+    console.log("=== Benchmark on entity creation and destruction ====\n");
+    logheader();
+
+    function dotests(tag, entityCount, runFactor) {
+
+        let mt1, mt2, runs;
+
+        // Create a new scene object to encapsulate all the entities and components.
+        let s = abecs.newScene();
+
+        // Register 3 components to the scene.
+        let health = s.registerComponent("health", Uint8Array);
+        let pos = s.registerComponent("pos", Float32Array, 3);
+        let dir = s.registerComponent("dir", Float32Array, 3);
+
+        // Initialize all the data structures for the entities.
+        s.build(entityCount);
+
+
+        runs = 1 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            for (let k = 0; k < entityCount; k++) {
+                let eid = s.allocateEntity();
+            }
+        }
+        logtime(tag + ", allocateEntity", mt1, microtime.now(), entityCount, runs, entityCount);
+
+
+        runs = 1 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            for (let k = 0; k < entityCount; k++)
+                s.freeEntity(k);
+        }
+        logtime(tag + ", freeEntity", mt1, microtime.now(), entityCount, runs, entityCount);
+
+
+        runs = 1 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            for (let k = 0; k < entityCount; k++) {
+                let eid = s.allocateEntity();
+                s.componentOn(eid, health);
+            }
+        }
+        logtime(tag + ", allocateEntity, add 1 component", mt1, microtime.now(), entityCount, runs, entityCount);
+        
+        
+        runs = 1 * runFactor;
+        mt1 = microtime.now();
+        let eids = s.getEntityIds(health);
+        for (let k = 0; k < eids.length; k++) {
+            s.getValue(eids[k], health);
+        }
+        logtime(tag + ", iterate 1 component", mt1, microtime.now(), entityCount, runs, entityCount);
+
+
+        runs = 1 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            for (let k = 0; k < entityCount; k++)
+                s.freeEntity(k);
+        }
+        logtime(tag + ", freeEntity, with 1 component", mt1, microtime.now(), entityCount, runs, entityCount);
+
+
+        runs = 1 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            for (let k = 0; k < entityCount; k++) {
+                let eid = s.allocateEntity();
+                s.componentOn(eid, health);
+                s.componentOn(eid, pos);
+            }
+        }
+        logtime(tag + ", allocateEntity, add 2 components", mt1, microtime.now(), entityCount, runs, entityCount);
+        
+        
+        runs = 1 * runFactor;
+        mt1 = microtime.now();
+        eids = s.getEntityIds(health);
+        for (let k = 0; k < eids.length; k++) {
+            s.getValue(eids[k], health);
+            s.getValue(eids[k], pos);
+        }
+        logtime(tag + ", iterate 2 components", mt1, microtime.now(), entityCount, runs, entityCount);
+
+
+        runs = 1 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            for (let k = 0; k < entityCount; k++)
+                s.freeEntity(k);
+        }
+        logtime(tag + ", freeEntity, with 2 components", mt1, microtime.now(), entityCount, runs, entityCount);
+
+    }
+
+    dotests("100K",  100000, 1);
+    dotests("1M",   1000000, 1);
+    dotests("5M",   5000000, 1);
+    dotests("10M",  10000000, 1);
+    dotests("20M",  20000000, 1);
 
     t.pass();
     
