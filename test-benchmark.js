@@ -13,25 +13,43 @@ const FRAME60 = 60;         // for 60 FPS
 
 function logheader() {
     let msg = 
-        "| Functional Area ".padEnd(44, " ") +
-        "| Entities ".padEnd(12, " ") +
+        "| Function Area ".padEnd(44, " ") +
+        "| Number of ".padEnd(12, " ") +
         "| Runs ".padEnd(14, " ") +
-        "| Operations ".padEnd(14, " ") +
-        "| Time ms ".padEnd(10, " ") +
-        "| nanosec/op ".padEnd(13, " ") +
-        "| ops/sec ".padEnd(17, " ") +
+        "| Total Time ".padEnd(13, " ") +
+        "| Time/Run ".padEnd(15, " ") +
+        "| Time/Run ".padEnd(15, " ") +
+//      "| Operations ".padEnd(14, " ") +
+//      "| nanosec/op ".padEnd(13, " ") +
+//      "| ops/sec ".padEnd(17, " ") +
         "| Runs/frame ".padEnd(15, " ") +
         "| FPS of Runs ".padEnd(16, " ") +
+        "|";
+    console.log(msg);
+    msg = 
+        "|  ".padEnd(44, " ") +
+        "| Entities ".padEnd(12, " ") +
+        "|  ".padEnd(14, " ") +
+        "| millisecs ".padEnd(13, " ") +
+        "| microseconds ".padEnd(15, " ") +
+        "| nanoseconds ".padEnd(15, " ") +
+//      "|  ".padEnd(14, " ") +
+//      "|  ".padEnd(13, " ") +
+//      "|  ".padEnd(17, " ") +
+        "| 60-fps frame ".padEnd(15, " ") +
+        "|  ".padEnd(16, " ") +
         "|";
     console.log(msg);
     msg = 
         "|:".padEnd(44, "-") +
         "|:".padEnd(12, "-") +
         "|:".padEnd(14, "-") +
-        "|:".padEnd(14, "-") +
-        "|:".padEnd(10, "-") +
         "|:".padEnd(13, "-") +
-        "|:".padEnd(17, "-") +
+        "|:".padEnd(15, "-") +
+        "|:".padEnd(15, "-") +
+//      "|:".padEnd(14, "-") +
+//      "|:".padEnd(13, "-") +
+//      "|:".padEnd(17, "-") +
         "|:".padEnd(15, "-") +
         "|:".padEnd(16, "-") +
         "|";
@@ -43,6 +61,10 @@ function logtime(tag, mt1, mt2, entityCount, runs, opsPerRun) {
     const ms = microseconds / 1000;
     const ops = runs * (opsPerRun || 1);
     const ops_rate  = Math.floor( ops / microseconds * 1000000 );
+    const sec_per_run     = microseconds / 1000 / 1000 / runs;
+    const ms_per_run      = microseconds / 1000 / runs;
+    const us_per_run      = Math.floor( (microseconds / runs) * 100 ) / 100;
+    const ns_per_run      = Math.floor( (microseconds * 1000 / runs) * 10) / 10;
     const runs_per_second = (runs * 1000000) / microseconds;
     const runs_per_frame  = Math.floor( (runs_per_second / FRAME60) * 10 ) / 10;
     const runs_fps = Math.floor( runs_per_frame * FRAME60 );
@@ -52,18 +74,24 @@ function logtime(tag, mt1, mt2, entityCount, runs, opsPerRun) {
         "| " + (tag + " ").padEnd(42, " ") +
         "| " + (entityCount.toLocaleString()).padEnd(10, " ") +
         "| " + (runs.toLocaleString()).padEnd(12, " ") +
-        "| " + (ops.toLocaleString()).padEnd(12, " ") +
-        "| " + (Math.round(ms).toLocaleString()).padEnd(8, " ") +
-        "| " + (unit_time.toLocaleString()).padEnd(11, " ") +
-        "| " + (ops_rate.toLocaleString()).padEnd(15, " ") +
+        "| " + (Math.round(ms).toLocaleString()).padEnd(11, " ") +
+        "| " + (us_per_run.toLocaleString()).padEnd(13, " ") +
+        "| " + (ns_per_run.toLocaleString()).padEnd(13, " ") +
+//      "| " + (ops.toLocaleString()).padEnd(12, " ") +
+//      "| " + (unit_time.toLocaleString()).padEnd(11, " ") +
+//      "| " + (ops_rate.toLocaleString()).padEnd(15, " ") +
         "| " + (runs_per_frame.toLocaleString()).padEnd(13, " ") +
         "| " + (runs_fps.toLocaleString()).padEnd(14, " ") +
         "|";
     console.log(msg);
 }
 
+
+
 test("benchmark", t => {
 
+    console.log("\n");
+    console.log("=== Benchmark on API ====\n");
     logheader();
 
     let mt1, mt2, runs, entityCount = 100000;
@@ -290,9 +318,9 @@ test("benchmark", t => {
         s.componentOn(k, health);
     mt1 = microtime.now();
     for (let i = 0; i < runs; i++)
-        s.getEntities(health);
-    logtime("getEntities of on-component", mt1, microtime.now(), entityCount, runs, 1);
-    t.is(s.getEntities(health).length, entityCount);
+        s.getEntityIds(health);
+    logtime("getEntityIds of on-component", mt1, microtime.now(), entityCount, runs, 1);
+    t.is(s.getEntityIds(health).length, entityCount);
 
 
     runs = 100000000;
@@ -300,9 +328,9 @@ test("benchmark", t => {
         s.componentOff(k, health);
     mt1 = microtime.now();
     for (let i = 0; i < runs; i++)
-        s.getEntities(health);
-    logtime("getEntities of off-component", mt1, microtime.now(), entityCount, runs, 1);
-    t.is(s.getEntities(health).length, 0);
+        s.getEntityIds(health);
+    logtime("getEntityIds of off-component", mt1, microtime.now(), entityCount, runs, 1);
+    t.is(s.getEntityIds(health).length, 0);
 
 
     runs = 2000;
@@ -341,376 +369,234 @@ test("benchmark", t => {
 });
 
 
-test("system-fn-10K", t => {
-    let mt1, mt2, runs, entityCount = 10000;
+test("system-fn", t => {
 
-    let s = abecs.newScene();
-    let health = s.registerComponent("health", Uint8Array);
-    let pos = s.registerComponent("pos", Float32Array, 3);
-    let dir = s.registerComponent("dir", Float32Array, 3);
-
-    t.is(s.hasBuilt, false);
-    s.build(entityCount);
-    t.is(s.hasBuilt, true);
-
-    for (let k = 0; k < entityCount; k++) {
-        let eid = s.allocateEntity();
-        s.componentOn(eid, health);
-        s.componentOn(eid, pos);
-        s.componentOn(eid, dir);
-    }
-    t.is(s.getEntities(health).length, entityCount);
-
-    let sysSetValue = (s, eid, cid, ctx) => {
-        s.setValue(eid, cid, 10);
-    };
-
-    let sysSetSpeed = (s, eid, cid, ctx) => {
-        s.setSlot(eid, pos, 0, 100);
-        s.setSlot(eid, pos, 1, 110);
-        s.setSlot(eid, pos, 2, 120);
-        s.setSlot(eid, dir, 0, 10);
-        s.setSlot(eid, dir, 1, 11);
-        s.setSlot(eid, dir, 2, 12);
-    };
-
-    let sysCalcSpeed = (s, eid, cid, ctx) => {
-        let x  = s.getSlot(eid, pos, 0);
-        let y  = s.getSlot(eid, pos, 1);
-        let z  = s.getSlot(eid, pos, 2);
-        let vx = s.getSlot(eid, dir, 0);
-        let vy = s.getSlot(eid, dir, 1);
-        let vz = s.getSlot(eid, dir, 2);
-        s.setSlot(eid, pos, 0, x + vx);
-        s.setSlot(eid, pos, 1, y + vx);
-        s.setSlot(eid, pos, 2, z + vx);
-    };
+    console.log("\n");
+    console.log("=== Benchmark on System Functions ====\n");
+    logheader();
     
+    function dotests(tag, entityCount, runFactor) {
 
-    runs = 60000;
-    s.registerSystem(health, sysSetValue);
-    // s.registerSystem(health, (s, eid, cid, ctx) => {
-    //     s.setValue(eid, cid, 10);
-    // });
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++)
-        s.applySystems();
-    logtime("10K entities, applySystems", mt1, microtime.now(), entityCount, runs, entityCount);
+        let mt1, mt2, runs;
 
+        // Create a new scene object to encapsulate all the entities and components.
+        let s = abecs.newScene();
 
-    runs = 60000;
-    let sysfn = s.systemHandler(health);
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        for (let k = 0; k < entities.length; k++) {
-            sysfn(s, k, health);
+        // Register 3 components to the scene.
+        let health = s.registerComponent("health", Uint8Array);
+        let pos = s.registerComponent("pos", Float32Array, 3);
+        let dir = s.registerComponent("dir", Float32Array, 3);
+
+        // Initialize all the data structures for the entities.
+        s.build(entityCount);
+
+        // Allocate all the entities and attach components to them.
+        for (let k = 0; k < entityCount; k++) {
+            let eid = s.allocateEntity();
+            s.componentOn(eid, health);
+            s.componentOn(eid, pos);
+            s.componentOn(eid, dir);
         }
-    }
-    logtime("10K, getEntities+loop NOP", mt1, microtime.now(), entityCount, runs, entityCount);
+        t.is(s.getEntityIds(health).length, entityCount);
+
+        // Set up some system functions.
+
+        let health1w = (s, eid, ctx) => {
+            s.setValue(eid, health, 10);            // set 1 component value.
+        };
+
+        let speed3w = (s, eid, ctx) => {
+            s.setSlot(eid, dir, 0, 10);             // set 3 values
+            s.setSlot(eid, dir, 1, 11);
+            s.setSlot(eid, dir, 2, 12);
+        };
+
+        let position3w = (s, eid, ctx) => {
+            s.setSlot(eid, pos, 0, 100);            // set 3 values
+            s.setSlot(eid, pos, 1, 110);
+            s.setSlot(eid, pos, 2, 120);
+        };
+
+        let speedPos4r2w = (s, eid, ctx) => {
+            let x  = s.getSlot(eid, pos, 0);        // 4 reads
+            let y  = s.getSlot(eid, pos, 1);
+            let vx = s.getSlot(eid, dir, 0);        //
+            let vy = s.getSlot(eid, dir, 1);
+            s.setSlot(eid, pos, 0, x + vx);         // 2 writes
+            s.setSlot(eid, pos, 1, y + vx);
+        };
+
+        let speed6r3w = (s, eid, ctx) => {
+            let x  = s.getSlot(eid, pos, 0);        // 6 reads
+            let y  = s.getSlot(eid, pos, 1);
+            let z  = s.getSlot(eid, pos, 2);
+            let vx = s.getSlot(eid, dir, 0);
+            let vy = s.getSlot(eid, dir, 1);
+            let vz = s.getSlot(eid, dir, 2);
+            s.setSlot(eid, pos, 0, x + vx);         // 3 writes
+            s.setSlot(eid, pos, 1, y + vx);
+            s.setSlot(eid, pos, 2, z + vx);
+        };
+
+        // Register a system function first.
+        s.registerSystem(health, health1w);
+
+        // Inline function somehow is really slow.
+        // s.registerSystem(health, (s, eid, ctx) => {
+        //     s.setValue(eid, 10);
+        // });
 
 
-    runs = 60000;
-    s.registerSystem(health, sysSetValue);
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++)
-        s.applySystems();
-    logtime("10K, applySystems with setValue", mt1, microtime.now(), entityCount, runs, entityCount);
+        // Run the benchmarks.
+
+        runs = 10000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++)
+            s.applySystems();
+        logtime(tag + ", health1w, applySystems", mt1, microtime.now(), entityCount, runs, entityCount);
+
+        // Register another system function.  From this point, applySystems() will run both system functions.
+        s.registerSystem(dir, speed3w);
+
+        runs = 4000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++)
+            s.applySystems();
+        logtime(tag + ", health1w, speed3w, applySystems", mt1, microtime.now(), entityCount, runs, entityCount);
 
 
-    runs = 60000;
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        for (let k = 0; k < entities.length; k++) {
-            s.setValue(k, health, 10);
+        // Run the raw getEntityIds() loop directly with the system function.
+        runs = 10000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            const ids = s.getEntityIds(health);
+            for (let k = 0; k < ids.length; k++) {
+                health1w(s, ids[k]);
+            }
         }
-    }
-    logtime("10K, getEntities+loop with setValue", mt1, microtime.now(), entityCount, runs, entityCount);
+        logtime(tag + ", health1w, getEntityIds loop", mt1, microtime.now(), entityCount, runs, entityCount);
 
-    
-    runs = 6000;
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        entities.forEach( eid => s.setValue(eid, health, 10) );
-    }
-    logtime("10K, getEntities+forEach with setValue", mt1, microtime.now(), entityCount, runs, entityCount);
-    
 
-    runs = 600;
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        for (let k = 0; k < entities.length; k++) {
-            sysSetSpeed(s, k);
+        runs = 2000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            s.getEntityIds(health).forEach(eid => health1w(s, eid));
         }
-    }
-    logtime("10K, getEntities+loop with sysSetSpeed", mt1, microtime.now(), entityCount, runs, entityCount);
+        logtime(tag + ", health1w, getEntityIds forEach", mt1, microtime.now(), entityCount, runs, entityCount);
 
-    
-    runs = 600;
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        for (let k = 0; k < entities.length; k++) {
-            sysCalcSpeed(s, k);
+
+        runs = 2000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            const ids = s.getEntityIds(health);
+            for (let k = 0; k < ids.length; k++) {
+                health1w(s, ids[k]);
+            }
+            const ids2 = s.getEntityIds(pos);
+            for (let k = 0; k < ids2.length; k++) {
+                speed3w(s, ids2[k]);
+            }
         }
-    }
-    logtime("10K, getEntities+loop with sysCalcSpeed", mt1, microtime.now(), entityCount, runs, entityCount);
+        logtime(tag + ", health1w speed3w, getEntityIds loop", mt1, microtime.now(), entityCount, runs, entityCount);
 
 
-    t.pass();
-});
-
-
-test("system-fn-100K", t => {
-    let mt1, mt2, runs, entityCount = 100000;
-
-    let s = abecs.newScene();
-    let health = s.registerComponent("health", Uint8Array);
-    let pos = s.registerComponent("pos", Float32Array, 3);
-    let dir = s.registerComponent("dir", Float32Array, 3);
-
-    t.is(s.hasBuilt, false);
-    s.build(entityCount);
-    t.is(s.hasBuilt, true);
-
-    for (let k = 0; k < entityCount; k++) {
-        let eid = s.allocateEntity();
-        s.componentOn(eid, health);
-        s.componentOn(eid, pos);
-        s.componentOn(eid, dir);
-    }
-    t.is(s.getEntities(health).length, entityCount);
-
-    let sysSetValue = (s, eid, cid, ctx) => {
-        s.setValue(eid, cid, 10);
-    };
-
-    let sysSetSpeed = (s, eid, cid, ctx) => {
-        s.setSlot(eid, pos, 0, 100);
-        s.setSlot(eid, pos, 1, 110);
-        s.setSlot(eid, pos, 2, 120);
-        s.setSlot(eid, dir, 0, 10);
-        s.setSlot(eid, dir, 1, 11);
-        s.setSlot(eid, dir, 2, 12);
-    };
-
-    let sysCalcSpeed = (s, eid, cid, ctx) => {
-        let x  = s.getSlot(eid, pos, 0);
-        let y  = s.getSlot(eid, pos, 1);
-        let z  = s.getSlot(eid, pos, 2);
-        let vx = s.getSlot(eid, dir, 0);
-        let vy = s.getSlot(eid, dir, 1);
-        let vz = s.getSlot(eid, dir, 2);
-        s.setSlot(eid, pos, 0, x + vx);
-        s.setSlot(eid, pos, 1, y + vx);
-        s.setSlot(eid, pos, 2, z + vx);
-    };
-    
-
-    runs = 1000;
-    s.registerSystem(health, sysSetValue);
-    // s.registerSystem(health, (s, eid, cid, ctx) => {
-    //     s.setValue(eid, cid, 10);
-    // });
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++)
-        s.applySystems();
-    logtime("100K entities, applySystems", mt1, microtime.now(), entityCount, runs, entityCount);
-
-
-    runs = 6000;
-    let sysfn = s.systemHandler(health);
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        for (let k = 0; k < entities.length; k++) {
-            sysfn(s, k, health);
+        runs = 10000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            let ids = s.getEntityIds(health);
+            for (let k = 0; k < ids.length; k++) {
+                s.setValue(ids[k], health, 10);
+            }
         }
-    }
-    logtime("100K, getEntities+loop NOP", mt1, microtime.now(), entityCount, runs, entityCount);
+        logtime(tag + ", 1 setValue, getEntityIds loop", mt1, microtime.now(), entityCount, runs, entityCount);
 
-
-    runs = 1000;
-    s.registerSystem(health, sysSetValue);
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++)
-        s.applySystems();
-    logtime("100K, applySystems with setValue", mt1, microtime.now(), entityCount, runs, entityCount);
-
-
-    runs = 6000;
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        for (let k = 0; k < entities.length; k++) {
-            s.setValue(k, health, 10);
+        
+        runs = 5000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            let ids = s.getEntityIds(health);
+            ids.forEach( eid => s.setValue(eid, health, 10) );
         }
-    }
-    logtime("100K, getEntities+loop with setValue", mt1, microtime.now(), entityCount, runs, entityCount);
+        logtime(tag + ", 1 setValue, getEntityIds forEach", mt1, microtime.now(), entityCount, runs, entityCount);
 
-    
-    runs = 600;
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        entities.forEach( eid => s.setValue(eid, health, 10) );
-    }
-    logtime("100K, getEntities+forEach with setValue", mt1, microtime.now(), entityCount, runs, entityCount);
-    
 
-    runs = 60;
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        for (let k = 0; k < entities.length; k++) {
-            sysSetSpeed(s, k);
+        runs = 5000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            let ids = s.getEntityIds(health);
+            for (let k = 0; k < ids.length; k++) {
+                speed3w(s, ids[k]);
+            }
         }
-    }
-    logtime("100K, getEntities+loop with sysSetSpeed", mt1, microtime.now(), entityCount, runs, entityCount);
+        logtime(tag + ", speed3w, getEntityIds loop", mt1, microtime.now(), entityCount, runs, entityCount);
 
-    
-    runs = 60;
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        for (let k = 0; k < entities.length; k++) {
-            sysCalcSpeed(s, k);
+        
+        runs = 5000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            s.getEntityIds(health).forEach( eid => speed3w(s, eid) )
         }
-    }
-    logtime("100K, getEntities+loop with sysCalcSpeed", mt1, microtime.now(), entityCount, runs, entityCount);
+        logtime(tag + ", speed3w, getEntityIds forEach", mt1, microtime.now(), entityCount, runs, entityCount);
 
-
-    t.pass();
-});
-
-
-test("system-fn-1M", t => {
-    let mt1, mt2, runs, entityCount = 1000000;
-
-    let s = abecs.newScene();
-    let health = s.registerComponent("health", Uint8Array);
-    let pos = s.registerComponent("pos", Float32Array, 3);
-    let dir = s.registerComponent("dir", Float32Array, 3);
-
-    t.is(s.hasBuilt, false);
-    s.build(entityCount);
-    t.is(s.hasBuilt, true);
-
-    for (let k = 0; k < entityCount; k++) {
-        let eid = s.allocateEntity();
-        s.componentOn(eid, health);
-        s.componentOn(eid, pos);
-        s.componentOn(eid, dir);
-    }
-    t.is(s.getEntities(health).length, entityCount);
-
-    let sysSetValue = (s, eid, cid, ctx) => {
-        s.setValue(eid, cid, 10);
-    };
-
-    let sysSetSpeed = (s, eid, cid, ctx) => {
-        s.setSlot(eid, pos, 0, 100);
-        s.setSlot(eid, pos, 1, 110);
-        s.setSlot(eid, pos, 2, 120);
-        s.setSlot(eid, dir, 0, 10);
-        s.setSlot(eid, dir, 1, 11);
-        s.setSlot(eid, dir, 2, 12);
-    };
-
-    let sysCalcSpeed = (s, eid, cid, ctx) => {
-        let x  = s.getSlot(eid, pos, 0);
-        let y  = s.getSlot(eid, pos, 1);
-        let z  = s.getSlot(eid, pos, 2);
-        let vx = s.getSlot(eid, dir, 0);
-        let vy = s.getSlot(eid, dir, 1);
-        let vz = s.getSlot(eid, dir, 2);
-        s.setSlot(eid, pos, 0, x + vx);
-        s.setSlot(eid, pos, 1, y + vx);
-        s.setSlot(eid, pos, 2, z + vx);
-    };
-    
-
-    runs = 60;
-
-    s.registerSystem(health, sysSetValue);
-    // s.registerSystem(health, (s, eid, cid, ctx) => {
-    //     s.setValue(eid, cid, 10);
-    // });
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++)
-        s.applySystems();
-    logtime("1M entities, applySystems", mt1, microtime.now(), entityCount, runs, entityCount);
-
-
-    runs = 600;
-
-    let sysfn = s.systemHandler(health);
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        for (let k = 0; k < entities.length; k++) {
-            sysfn(s, k, health);
+        
+        runs = 2000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            let ids = s.getEntityIds(dir);
+            for (let k = 0; k < ids.length; k++) {
+                speed6r3w(s, ids[k]);
+            }
         }
-    }
-    logtime("1M, getEntities+loop NOP", mt1, microtime.now(), entityCount, runs, entityCount);
+        logtime(tag + ", speed6r3w, getEntityIds loop", mt1, microtime.now(), entityCount, runs, entityCount);
 
 
-    runs = 100;
-
-    s.registerSystem(health, sysSetValue);
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++)
-        s.applySystems();
-    logtime("1M, applySystems with setValue", mt1, microtime.now(), entityCount, runs, entityCount);
-
-
-    runs = 600;
-    
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        for (let k = 0; k < entities.length; k++) {
-            s.setValue(k, health, 10);
+        runs = 2000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            s.getEntityIds(health).forEach( eid => speed6r3w(s, eid) )
         }
-    }
-    logtime("1M, getEntities+loop with setValue", mt1, microtime.now(), entityCount, runs, entityCount);
-
-    
-    runs = 60;
-
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        entities.forEach( eid => s.setValue(eid, health, 10) );
-    }
-    logtime("1M, getEntities+forEach with setValue", mt1, microtime.now(), entityCount, runs, entityCount);
+        logtime(tag + ", speed6r3w, getEntityIds forEach", mt1, microtime.now(), entityCount, runs, entityCount);
 
 
-    runs = 60;
-    
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        for (let k = 0; k < entities.length; k++) {
-            sysSetSpeed(s, k);
+        // Clear all system functions and register a single one.
+        s.registerSystem(health, null);
+        s.registerSystem(dir, null);
+        s.registerSystem(dir, speedPos4r2w);
+
+
+        runs = 5000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++)
+            s.applySystems();
+        logtime(tag + ", speedPos4r2w, applySystems", mt1, microtime.now(), entityCount, runs, entityCount);
+
+
+        runs = 4000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            const ids = s.getEntityIds(pos);
+            for (let k = 0; k < ids.length; k++) {
+                speedPos4r2w(s, ids[k]);
+            }
         }
-    }
-    logtime("1M, getEntities+loop with sysSetSpeed", mt1, microtime.now(), entityCount, runs, entityCount);
+        logtime(tag + ", speedPos4r2w, getEntityIds loop", mt1, microtime.now(), entityCount, runs, entityCount);
 
-    
-    runs = 60;
-    
-    mt1 = microtime.now();
-    for (let i = 0; i < runs; i++) {
-        let entities = s.getEntities(health);
-        for (let k = 0; k < entities.length; k++) {
-            sysCalcSpeed(s, k);
+        
+        runs = 4000 * runFactor;
+        mt1 = microtime.now();
+        for (let i = 0; i < runs; i++) {
+            s.getEntityIds(health).forEach(eid => speedPos4r2w(s, eid));
         }
+        logtime(tag + ", speedPos4r2w, getEntityIds forEach", mt1, microtime.now(), entityCount, runs, entityCount);
+
     }
-    logtime("1M, getEntities+loop with sysCalcSpeed", mt1, microtime.now(), entityCount, runs, entityCount);
+
+    dotests("10K",  10000, 1);
+    dotests("100K", 100000, 0.1);
+    dotests("1M",   1000000, 0.01);
+    dotests("2M",   2000000, 0.005);
+    dotests("5M",   5000000, 0.002);
+    dotests("10M",  10000000, 0.001);
 
     t.pass();
     
@@ -720,4 +606,5 @@ test("system-fn-1M", t => {
 test("dummy", t => {
     t.pass();
 });
+
 

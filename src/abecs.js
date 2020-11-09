@@ -1,16 +1,13 @@
 /*
-  Abecs.js - Array-based entity component system.",
-  Copyright (C) 2020 William Wong (williamw520@gmail.com).  All rights reserved.",
+  Abecs.js - Array-based entity component system.
+  Copyright (C) 2020 William Wong (williamw520@gmail.com).  All rights reserved.
 */
 
 import {BitVec} from "./lib/bitvec.js";
 
-// TODO:
-//  Register system handler per component.
 
-
-const ENABLE_SLOT_PARAM_CHECK = true;           // Note: Enabling check causes a branching test, that results in 3 times slowdown in getSlot()/setSlot().
-//const ENABLE_SLOT_PARAM_CHECK = false;
+//const ENABLE_SLOT_PARAM_CHECK = true;           // Note: Enabling check causes a branching test, that results in 3 times slowdown in getSlot()/setSlot().
+const ENABLE_SLOT_PARAM_CHECK = false;
 
 
 // abecs module, the entry point to the ABECS.
@@ -43,7 +40,7 @@ let abecs = (function() {
             this._activeComponents = [];        // one bit vector per component to track the active state of the component to entities.
             this._componentData = [];           // the component data arrays.
             this._memorizers = {};
-            this._entitiesGetters = {};
+            this._entityIdsGetters = {};
         }
 
         // componentName - descriptive component name; should be unique, for looking up the component id.
@@ -87,7 +84,7 @@ let abecs = (function() {
 
             this._componentData = [];
             this._memorizers = {};
-            this._entitiesGetters = {};
+            this._entityIdsGetters = {};
             for (let cid = 0; cid < this.componentCount; cid++) {
                 let totalSlots = this.entityCount * this._slotsPerEntity[cid];
                 this._componentData.push(new this._arrayTypes[cid](totalSlots));
@@ -199,28 +196,28 @@ let abecs = (function() {
         iterate(componentId, systemFn, ctx) {
             let bitvec = this._activeComponents[componentId];
             for (let entityId = 0; (entityId = bitvec.nextOn(entityId)) != -1; entityId++) {
-                systemFn(this, entityId, componentId, ctx);
+                systemFn(this, entityId, ctx);
             }
         }
 
-        getEntities(componentId) {
-            return this._entitiesGetters[componentId]();
+        getEntityIds(componentId) {
+            return this._entityIdsGetters[componentId]();
         }
 
         _resetGetter(componentId) {
-            this._entitiesGetters[componentId] = this._memorizers[componentId];
+            this._entityIdsGetters[componentId] = this._memorizers[componentId];
         }
 
         _memorizeGetter(componentId) {
             //console.log("_memorizeGetter " + componentId);
-            const cachedEntityIds = this._toEntities(componentId);
-            this._entitiesGetters[componentId] = () => cachedEntityIds;
+            const cachedEntityIds = this._toEntityIds(componentId);
+            this._entityIdsGetters[componentId] = () => cachedEntityIds;
             return cachedEntityIds;
         }
 
         // Return an array of entity ids whose entities with the active component on.
         // Note: allocating a new array.
-        _toEntities(componentId) {
+        _toEntityIds(componentId) {
             let entityIds = [];
             this.iterate(componentId, (_, eId) => entityIds.push(eId));
             return entityIds;
@@ -229,22 +226,22 @@ let abecs = (function() {
         // Return a map of component values keyed with entityId with the active component on.
         // Note: the new array causes memory allocation.
         toValues(componentId) {
-            return this.getEntities(componentId).reduce( (map, eId) => (map[eId] = this.getValue(eId, componentId), map), {});
+            return this.getEntityIds(componentId).reduce( (map, eId) => (map[eId] = this.getValue(eId, componentId), map), {});
         }
 
         // Return a map of component slot values keyed with entityId with the active component on.
         // Note: the new array causes memory allocation.
         toSlotValues(componentId, slot) {
-            return this.getEntities(componentId).reduce( (map, eId) => (map[eId] = this.getSlot(eId, componentId, slot), map), {});
+            return this.getEntityIds(componentId).reduce( (map, eId) => (map[eId] = this.getSlot(eId, componentId, slot), map), {});
         }
 
         applySystems(ctx) {
             for (let cid = 0; cid < this._systemFns.length; cid++) {
                 let systemFn = this._systemFns[cid];
                 if (systemFn) {
-                    let entities = this.getEntities(cid);
-                    for (let eid = 0; eid < entities.length; eid++) {
-                        systemFn(this, eid, cid, ctx)
+                    let entityIds = this.getEntityIds(cid);
+                    for (let k = 0; k < entityIds.length; k++) {
+                        systemFn(this, entityIds[k], ctx);
                     }
                 }
             }
@@ -269,6 +266,8 @@ let abecs = (function() {
 
     const range = (start, end) => Array.from({length: (end - start)}, (v, k) => k + start);
 
+    abecs.ENABLE_SLOT_PARAM_CHECK = ENABLE_SLOT_PARAM_CHECK;
+    
     return abecs;
 }());
 

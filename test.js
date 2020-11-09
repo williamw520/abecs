@@ -67,9 +67,9 @@ test("test1", t => {
     s.setSlot(e1, pos, 1, 111);
     s.setSlot(e1, pos, 2, 112);
 
-    t.is(s._toEntities(health).length, 1);
-    t.is(s._toEntities(pos).length, 2);
-    t.is(s._toEntities(dir).length, 1);
+    t.is(s._toEntityIds(health).length, 1);
+    t.is(s._toEntityIds(pos).length, 2);
+    t.is(s._toEntityIds(dir).length, 1);
 
     s.setComponentValue(e0, pos, 100);
     s.setComponentSlot(e0, pos, 1, 101);
@@ -96,16 +96,16 @@ test("test1", t => {
         t.is(v2 == 102 || v2 == 112, true);
     });
 
-    s.getEntities(pos);
-    s.getEntities(pos);
-    s.getEntities(pos);
-    s.getEntities(pos);
-    s.getEntities(pos);
+    s.getEntityIds(pos);
+    s.getEntityIds(pos);
+    s.getEntityIds(pos);
+    s.getEntityIds(pos);
+    s.getEntityIds(pos);
 
     s._resetGetter(pos);
-    s.getEntities(pos);
-    s.getEntities(pos);
-    s.getEntities(pos);
+    s.getEntityIds(pos);
+    s.getEntityIds(pos);
+    s.getEntityIds(pos);
 
     s.registerSystem(health, (s, eid, cid, ctx) => {
         console.log("sys " + eid + " " + cid + " " + ctx);
@@ -117,7 +117,8 @@ test("test1", t => {
 
     s.applySystems("abc");
 
-    t.throws( () => { s.getSlot(e1, pos, 3) }, null, "Slot index is out of bound" );
+    if (abecs.ENABLE_SLOT_PARAM_CHECK)
+        t.throws( () => { s.getSlot(e1, pos, 3) }, null, "Slot index is out of bound" );
 
 });
 
