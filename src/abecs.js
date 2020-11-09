@@ -138,7 +138,7 @@ let abecs = (function() {
             return this._entityInUse.isOn(entityId);
         }
 
-        isOn(entityId, componentId) {
+        hasComponent(entityId, componentId) {
             return this._activeComponents[componentId].isOn(entityId);
         }
 

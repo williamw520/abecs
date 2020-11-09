@@ -11,6 +11,13 @@ import abecs from "./src/abecs.js";
 
 const FRAME60 = 60;         // for 60 FPS
 
+let timeUnit = 0;
+let timeFactorA = [1000, 0.001];
+let timeFactorB = [1000, 1];
+let timeLabelA  = ["nanoseconds", "milliseconds"];
+let timeLabelB  = ["nanoseconds",  "microseconds"];
+
+
 function logheader() {
     let msg = 
         "| Function Area ".padEnd(44, " ") +
@@ -18,12 +25,12 @@ function logheader() {
         "| Runs ".padEnd(14, " ") +
         "| Total Time ".padEnd(13, " ") +
         "| Time/Run ".padEnd(15, " ") +
-        "| Time/Run ".padEnd(15, " ") +
+//      "| Time/Run ".padEnd(15, " ") +
 //      "| Operations ".padEnd(14, " ") +
 //      "| nanosec/op ".padEnd(13, " ") +
 //      "| ops/sec ".padEnd(17, " ") +
-        "| Runs/frame ".padEnd(15, " ") +
-        "| FPS of Runs ".padEnd(16, " ") +
+        "| Runs/frame ".padEnd(16, " ") +
+        "| FPS of Runs ".padEnd(18, " ") +
         "|";
     console.log(msg);
     msg = 
@@ -31,13 +38,13 @@ function logheader() {
         "| Entities ".padEnd(12, " ") +
         "|  ".padEnd(14, " ") +
         "| millisecs ".padEnd(13, " ") +
-        "| microseconds ".padEnd(15, " ") +
-        "| nanoseconds ".padEnd(15, " ") +
+        "|" + (" " + timeLabelA[timeUnit]).padEnd(14, " ") +
+//      "|" + (" " + timeLabelB[timeUnit]).padEnd(14, " ") +
 //      "|  ".padEnd(14, " ") +
 //      "|  ".padEnd(13, " ") +
 //      "|  ".padEnd(17, " ") +
-        "| 60-fps frame ".padEnd(15, " ") +
-        "|  ".padEnd(16, " ") +
+        "| 60-fps frame ".padEnd(16, " ") +
+        "|  ".padEnd(18, " ") +
         "|";
     console.log(msg);
     msg = 
@@ -46,12 +53,12 @@ function logheader() {
         "|:".padEnd(14, "-") +
         "|:".padEnd(13, "-") +
         "|:".padEnd(15, "-") +
-        "|:".padEnd(15, "-") +
+//      "|:".padEnd(15, "-") +
 //      "|:".padEnd(14, "-") +
 //      "|:".padEnd(13, "-") +
 //      "|:".padEnd(17, "-") +
-        "|:".padEnd(15, "-") +
         "|:".padEnd(16, "-") +
+        "|:".padEnd(18, "-") +
         "|";
     console.log(msg);
 }
@@ -63,33 +70,34 @@ function logtime(tag, mt1, mt2, entityCount, runs, opsPerRun) {
     const ops_rate  = Math.floor( ops / microseconds * 1000000 );
     const sec_per_run     = microseconds / 1000 / 1000 / runs;
     const ms_per_run      = microseconds / 1000 / runs;
-    const us_per_run      = Math.floor( (microseconds / runs) * 100 ) / 100;
-    const ns_per_run      = Math.floor( (microseconds * 1000 / runs) * 10) / 10;
+    const timeA_per_run   = Math.floor( (microseconds * timeFactorA[timeUnit] / runs) * 1000 ) / 1000;
+    const timeB_per_run   = Math.floor( (microseconds * timeFactorB[timeUnit] / runs) * 10  ) / 10;
     const runs_per_second = (runs * 1000000) / microseconds;
-    const runs_per_frame  = Math.floor( (runs_per_second / FRAME60) * 10 ) / 10;
-    const runs_fps = Math.floor( runs_per_frame * FRAME60 );
+    const runs_per_frame  = Math.floor( (runs_per_second / FRAME60) * 100 ) / 100;
+    const runs_fps = Math.floor( runs_per_frame * FRAME60 * 10 ) / 10;
     const unit_time = (microseconds * 1000) / ops;
-    const item_rate = Math.floor( (entityCount * ops) / (microseconds || 1) * 1000000 );
     const msg = 
         "| " + (tag + " ").padEnd(42, " ") +
         "| " + (entityCount.toLocaleString()).padEnd(10, " ") +
         "| " + (runs.toLocaleString()).padEnd(12, " ") +
         "| " + (Math.round(ms).toLocaleString()).padEnd(11, " ") +
-        "| " + (us_per_run.toLocaleString()).padEnd(13, " ") +
-        "| " + (ns_per_run.toLocaleString()).padEnd(13, " ") +
+        "| " + (timeA_per_run.toLocaleString()).padEnd(13, " ") +
+//      "| " + (timeB_per_run.toLocaleString()).padEnd(13, " ") +
 //      "| " + (ops.toLocaleString()).padEnd(12, " ") +
 //      "| " + (unit_time.toLocaleString()).padEnd(11, " ") +
 //      "| " + (ops_rate.toLocaleString()).padEnd(15, " ") +
-        "| " + (runs_per_frame.toLocaleString()).padEnd(13, " ") +
-        "| " + (runs_fps.toLocaleString()).padEnd(14, " ") +
+        "| " + (runs_per_frame.toLocaleString()).padEnd(14, " ") +
+        "| " + (runs_fps.toLocaleString()).padEnd(16, " ") +
         "|";
     console.log(msg);
 }
 
 
 
-test("benchmark", t => {
+test("api", t => {
 
+    timeUnit = 0;          // Set time unit index to 0, for microseconds and nanoseconds
+    
     console.log("\n");
     console.log("=== Benchmark on API ====\n");
     logheader();
@@ -137,14 +145,14 @@ test("benchmark", t => {
     runs = 500000000;
     mt1 = microtime.now();
     for (let i = 0; i < runs; i++)
-        s.isOn(0, health);
-    logtime("component health isOn 0", mt1, microtime.now(), entityCount, runs, 1);
+        s.hasComponent(0, health);
+    logtime("component health hasComponent 0", mt1, microtime.now(), entityCount, runs, 1);
 
     runs = 500000000;
     mt1 = microtime.now();
     for (let i = 0; i < runs; i++)
-        s.isOn(1, pos);
-    logtime("component pos isOn 1", mt1, microtime.now(), entityCount, runs, 1);
+        s.hasComponent(1, pos);
+    logtime("component pos hasComponent 1", mt1, microtime.now(), entityCount, runs, 1);
 
 
     runs = 1000;
@@ -371,6 +379,8 @@ test("benchmark", t => {
 
 test("system-fn", t => {
 
+    timeUnit = 1;          // Set time unit index to 1, for milliseconds and microseconds.
+    
     console.log("\n");
     console.log("=== Benchmark on System Functions ====\n");
     logheader();
@@ -417,7 +427,7 @@ test("system-fn", t => {
             s.setSlot(eid, pos, 2, 120);
         };
 
-        let speedPos4r2w = (s, eid, ctx) => {
+        let speed4r2w = (s, eid, ctx) => {
             let x  = s.getSlot(eid, pos, 0);        // 4 reads
             let y  = s.getSlot(eid, pos, 1);
             let vx = s.getSlot(eid, dir, 0);        //
@@ -558,17 +568,15 @@ test("system-fn", t => {
         logtime(tag + ", speed6r3w, getEntityIds forEach", mt1, microtime.now(), entityCount, runs, entityCount);
 
 
-        // Clear all system functions and register a single one.
-        s.registerSystem(health, null);
-        s.registerSystem(dir, null);
-        s.registerSystem(dir, speedPos4r2w);
-
+        // Overwrite the dir's system function.  Still retain the health.
+        //s.registerSystem(health, health1w);
+        s.registerSystem(dir, speed4r2w);
 
         runs = 5000 * runFactor;
         mt1 = microtime.now();
         for (let i = 0; i < runs; i++)
             s.applySystems();
-        logtime(tag + ", speedPos4r2w, applySystems", mt1, microtime.now(), entityCount, runs, entityCount);
+        logtime(tag + ", speed4r2w + health1w, applySystems", mt1, microtime.now(), entityCount, runs, entityCount);
 
 
         runs = 4000 * runFactor;
@@ -576,18 +584,18 @@ test("system-fn", t => {
         for (let i = 0; i < runs; i++) {
             const ids = s.getEntityIds(pos);
             for (let k = 0; k < ids.length; k++) {
-                speedPos4r2w(s, ids[k]);
+                speed4r2w(s, ids[k]);
             }
         }
-        logtime(tag + ", speedPos4r2w, getEntityIds loop", mt1, microtime.now(), entityCount, runs, entityCount);
+        logtime(tag + ", speed4r2w + health1w, loop", mt1, microtime.now(), entityCount, runs, entityCount);
 
         
         runs = 4000 * runFactor;
         mt1 = microtime.now();
         for (let i = 0; i < runs; i++) {
-            s.getEntityIds(health).forEach(eid => speedPos4r2w(s, eid));
+            s.getEntityIds(health).forEach(eid => speed4r2w(s, eid));
         }
-        logtime(tag + ", speedPos4r2w, getEntityIds forEach", mt1, microtime.now(), entityCount, runs, entityCount);
+        logtime(tag + ", speed4r2w + health1w, forEach", mt1, microtime.now(), entityCount, runs, entityCount);
 
     }
 

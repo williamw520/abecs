@@ -36,9 +36,9 @@ test("test1", t => {
         .componentOn(e0, pos);
     t.is(e0, 0);
 
-    t.is(s.isOn(e0, health), true);
-    t.is(s.isOn(e0, pos), true);
-    t.is(s.isOn(e0, dir), false);
+    t.is(s.hasComponent(e0, health), true);
+    t.is(s.hasComponent(e0, pos), true);
+    t.is(s.hasComponent(e0, dir), false);
 
     s.setValue(e0, health, 10);
     t.is(s.getValue(e0, health), 10);
@@ -59,9 +59,9 @@ test("test1", t => {
     t.is(s.componentOnCount(pos), 2);
     t.is(s.componentOnCount(dir), 1);
 
-    t.is(s.isOn(e1, health), false);
-    t.is(s.isOn(e1, pos), true);
-    t.is(s.isOn(e1, dir), true);
+    t.is(s.hasComponent(e1, health), false);
+    t.is(s.hasComponent(e1, pos), true);
+    t.is(s.hasComponent(e1, dir), true);
 
     s.setValue(e1, pos, 110);
     s.setSlot(e1, pos, 1, 111);
@@ -107,12 +107,12 @@ test("test1", t => {
     s.getEntityIds(pos);
     s.getEntityIds(pos);
 
-    s.registerSystem(health, (s, eid, cid, ctx) => {
-        console.log("sys " + eid + " " + cid + " " + ctx);
-    }).registerSystem(pos, (s, eid, cid, ctx) => {
-        console.log("sys " + eid + " " + cid + " " + ctx);
-    }).registerSystem(dir, (s, eid, cid, ctx) => {
-        console.log("sys " + eid + " " + cid + " " + ctx);
+    s.registerSystem(health, (s, eid, ctx) => {
+        console.log("sys health " + eid + " " + ctx);
+    }).registerSystem(pos, (s, eid, ctx) => {
+        console.log("sys pos " + eid + " " + ctx);
+    }).registerSystem(dir, (s, eid, ctx) => {
+        console.log("sys dir " + eid + " " + ctx);
     });
 
     s.applySystems("abc");
