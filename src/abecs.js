@@ -3,7 +3,7 @@
   Copyright (C) 2020 William Wong (williamw520@gmail.com).  All rights reserved.
 */
 
-import {BitVec} from "./lib/bitvec.js";
+import {BitVec} from "./bitvec/bitvec.js";
 
 
 //const ENABLE_SLOT_PARAM_CHECK = true;           // Note: Enabling check causes a branching test, that results in 3 times slowdown in getSlot()/setSlot().
@@ -148,9 +148,25 @@ let abecs = (function() {
             return this;
         }
 
+        componentsOn(entityId, ...componentIds) {
+            componentIds.forEach( componentId => {
+                this._activeComponents[componentId].bitOn(entityId);
+                this._resetGetter(componentId);
+            })
+            return this;
+        }
+
         componentOff(entityId, componentId) {
             this._activeComponents[componentId].bitOff(entityId);
             this._resetGetter(componentId);
+            return this;
+        }
+
+        componentsOff(entityId, ...componentIds) {
+            componentIds.forEach( componentId => {
+                this._activeComponents[componentId].bitOff(entityId);
+                this._resetGetter(componentId);
+            });
             return this;
         }
 
@@ -167,6 +183,65 @@ let abecs = (function() {
             let slotCount = this._checkParamOnSlotCount(componentId, slot);
             let slotIndex = entityId * slotCount + slot;
             return this._componentData[componentId][slotIndex];
+        }
+
+        getSlots2(entityId, componentId, toValues) {
+            let slotBase  = entityId * this.slotCount(componentId);
+            let array     = this._componentData[componentId];
+            toValues[0] = array[slotBase];
+            toValues[1] = array[slotBase + 1];
+            return toValues;
+        }
+
+        getSlots3(entityId, componentId, toValues) {
+            let slotBase  = entityId * this.slotCount(componentId);
+            let array     = this._componentData[componentId];
+            toValues[0] = array[slotBase];
+            toValues[1] = array[slotBase + 1];
+            toValues[2] = array[slotBase + 2];
+            return toValues;
+        }
+
+        getSlots4(entityId, componentId, toValues) {
+            let slotBase  = entityId * this.slotCount(componentId);
+            let array     = this._componentData[componentId];
+            toValues[0] = array[slotBase];
+            toValues[1] = array[slotBase + 1];
+            toValues[2] = array[slotBase + 2];
+            toValues[3] = array[slotBase + 3];
+            return toValues;
+        }
+
+        getSlots5(entityId, componentId, toValues) {
+            let slotBase  = entityId * this.slotCount(componentId);
+            let array     = this._componentData[componentId];
+            toValues[0] = array[slotBase];
+            toValues[1] = array[slotBase + 1];
+            toValues[2] = array[slotBase + 2];
+            toValues[3] = array[slotBase + 3];
+            toValues[4] = array[slotBase + 4];
+            return toValues;
+        }
+
+        getSlots6(entityId, componentId, toValues) {
+            let slotBase  = entityId * this.slotCount(componentId);
+            let array     = this._componentData[componentId];
+            toValues[0] = array[slotBase];
+            toValues[1] = array[slotBase + 1];
+            toValues[2] = array[slotBase + 2];
+            toValues[3] = array[slotBase + 3];
+            toValues[4] = array[slotBase + 4];
+            toValues[5] = array[slotBase + 5];
+            return toValues;
+        }
+
+        getSlots(entityId, componentId, toValues) {
+            let slotBase  = entityId * this.slotCount(componentId);
+            let array     = this._componentData[componentId];
+            for (let offset = 0; offset < toValues.length; offset++) {
+                toValues[offset] = array[slotBase + offset];
+            }
+            return toValues;
         }
 
         setValue(entityId, componentId, value) {

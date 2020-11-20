@@ -31,7 +31,7 @@ function copyBitVec(cb) {
     else
         throw Error("BitVec source folder not found.");
     return src(src_dir + "/bitvec.js")
-        .pipe(dest("./src/lib/"));
+        .pipe(dest("./src/bitvec/"));
 }
 
 let copyright = [
@@ -40,6 +40,6 @@ let copyright = [
     "",
 ].join("\n");
 
-exports.setuplib = series(copyBitVec);
-exports.default = series(uglify, addCopyright);
+exports.copylib = series(copyBitVec);
+exports.default = series(copyBitVec, uglify, addCopyright);
 

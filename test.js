@@ -77,6 +77,17 @@ test("test1", t => {
     t.is(s.getSlot(e0, pos, 0), 100);
     t.is(s.getSlot(e0, pos, 1), 101);
     t.is(s.getSlot(e0, pos, 2), 102);
+
+    let value3 = new Float32Array(3);
+    s.getSlots(e0, pos, value3);
+    t.is(value3[0], 100);
+    t.is(value3[1], 101);
+    t.is(value3[2], 102);
+    
+    s.getSlots(e1, pos, value3);
+    t.is(value3[0], 110);
+    t.is(value3[1], 111);
+    t.is(value3[2], 112);
     
     s.iterate(health,   (s, eid) => t.is(eid == 0, true));
     s.iterate(pos,      (s, eid) => t.is(eid == 0 || eid == 1, true));

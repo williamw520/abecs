@@ -300,6 +300,34 @@ test("api", t => {
         s.getSlot(99999, pos, 2);
     logtime("getSlot 99999 pos[2]", mt1, microtime.now(), entityCount, runs, 1);
 
+
+    let pos3 = new Float32Array(3);
+
+    runs = 100000000;
+    mt1 = microtime.now();
+    for (let i = 0; i < runs; i++)
+        s.getSlots(1, pos, pos3);
+    logtime("getSlots 1", mt1, microtime.now(), entityCount, runs, 1);
+
+    runs = 100000000;
+    mt1 = microtime.now();
+    for (let i = 0; i < runs; i++)
+        s.getSlots(99999, pos, pos3);
+    logtime("getSlots 99999", mt1, microtime.now(), entityCount, runs, 1);
+
+    runs = 100000000;
+    mt1 = microtime.now();
+    for (let i = 0; i < runs; i++)
+        s.getSlots3(1, pos, pos3);
+    logtime("getSlots3 1", mt1, microtime.now(), entityCount, runs, 1);
+
+    runs = 100000000;
+    mt1 = microtime.now();
+    for (let i = 0; i < runs; i++)
+        s.getSlots3(99999, pos, pos3);
+    logtime("getSlots3 99999", mt1, microtime.now(), entityCount, runs, 1);
+
+    
     
     runs = 1000;
     for (let k = 0; k < entityCount; k++)

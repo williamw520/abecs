@@ -25,12 +25,21 @@
     "devDependencies": {
         "ava": "^3.13.0",
         "esm": "^3.2.25",
-        "gulp": "^4.0.2",
-        "gulp-rename": "^2.0.0",
-        "gulp-uglify-es": "^2.0.0",
-        "gulp-header": "^2.0.9",
         "microtime": "^3.0.0",
-        "seedrandom": "^3.0.5"
+        "seedrandom": "^3.0.5",
+        "@rollup/plugin-commonjs": "^15.1.0",
+        "@rollup/plugin-node-resolve": "^9.0.0",
+        "gulp": "^4.0.2",
+        "gulp-live-server": "^0.0.31",
+        "gulp-uglify-es": "^2.0.0",
+        "gulp-usemin": "^0.3.30",
+        "gulp-htmlmin": "^5.0.1",
+        "gulp-rename": "^2.0.0",
+        "gulp-clean-css": "^4.3.0",
+        "gulp-zip": "5.0.2",
+        "del": "^5.1.0",
+        "uglifycss": "^0.0.29",
+        "gulp-header": "^2.0.9"
     },
     "ava": {
         "require": [
