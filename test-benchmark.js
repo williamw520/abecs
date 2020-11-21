@@ -306,25 +306,25 @@ test("api", t => {
     runs = 100000000;
     mt1 = microtime.now();
     for (let i = 0; i < runs; i++)
-        s.getSlots(1, pos, pos3);
+        s.getSlots(1, pos, pos3, 0);
     logtime("getSlots 1", mt1, microtime.now(), entityCount, runs, 1);
 
     runs = 100000000;
     mt1 = microtime.now();
     for (let i = 0; i < runs; i++)
-        s.getSlots(99999, pos, pos3);
+        s.getSlots(99999, pos, pos3, 0);
     logtime("getSlots 99999", mt1, microtime.now(), entityCount, runs, 1);
 
     runs = 100000000;
     mt1 = microtime.now();
     for (let i = 0; i < runs; i++)
-        s.getSlots3(1, pos, pos3);
+        s.getSlots3(1, pos, pos3, 0);
     logtime("getSlots3 1", mt1, microtime.now(), entityCount, runs, 1);
 
     runs = 100000000;
     mt1 = microtime.now();
     for (let i = 0; i < runs; i++)
-        s.getSlots3(99999, pos, pos3);
+        s.getSlots3(99999, pos, pos3, 0);
     logtime("getSlots3 99999", mt1, microtime.now(), entityCount, runs, 1);
 
     

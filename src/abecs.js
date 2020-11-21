@@ -185,63 +185,57 @@ let abecs = (function() {
             return this._componentData[componentId][slotIndex];
         }
 
-        getSlots2(entityId, componentId, toValues) {
+        getSlots2(entityId, componentId, toValues, offset) {
             let slotBase  = entityId * this.slotCount(componentId);
             let array     = this._componentData[componentId];
-            toValues[0] = array[slotBase];
-            toValues[1] = array[slotBase + 1];
-            return toValues;
+            toValues[offset]    = array[slotBase];
+            toValues[offset+1]  = array[slotBase + 1];
         }
 
-        getSlots3(entityId, componentId, toValues) {
+        getSlots3(entityId, componentId, toValues, offset) {
             let slotBase  = entityId * this.slotCount(componentId);
             let array     = this._componentData[componentId];
-            toValues[0] = array[slotBase];
-            toValues[1] = array[slotBase + 1];
-            toValues[2] = array[slotBase + 2];
-            return toValues;
+            toValues[offset]    = array[slotBase];
+            toValues[offset+1]  = array[slotBase + 1];
+            toValues[offset+2]  = array[slotBase + 2];
         }
 
-        getSlots4(entityId, componentId, toValues) {
+        getSlots4(entityId, componentId, toValues, offset) {
             let slotBase  = entityId * this.slotCount(componentId);
             let array     = this._componentData[componentId];
-            toValues[0] = array[slotBase];
-            toValues[1] = array[slotBase + 1];
-            toValues[2] = array[slotBase + 2];
-            toValues[3] = array[slotBase + 3];
-            return toValues;
+            toValues[offset]    = array[slotBase];
+            toValues[offset+1]  = array[slotBase + 1];
+            toValues[offset+2]  = array[slotBase + 2];
+            toValues[offset+3]  = array[slotBase + 3];
         }
 
-        getSlots5(entityId, componentId, toValues) {
+        getSlots5(entityId, componentId, toValues, offset) {
             let slotBase  = entityId * this.slotCount(componentId);
             let array     = this._componentData[componentId];
-            toValues[0] = array[slotBase];
-            toValues[1] = array[slotBase + 1];
-            toValues[2] = array[slotBase + 2];
-            toValues[3] = array[slotBase + 3];
-            toValues[4] = array[slotBase + 4];
-            return toValues;
+            toValues[offset]    = array[slotBase];
+            toValues[offset+1]  = array[slotBase + 1];
+            toValues[offset+2]  = array[slotBase + 2];
+            toValues[offset+3]  = array[slotBase + 3];
+            toValues[offset+4]  = array[slotBase + 4];
         }
 
-        getSlots6(entityId, componentId, toValues) {
+        getSlots6(entityId, componentId, toValues, offset) {
             let slotBase  = entityId * this.slotCount(componentId);
             let array     = this._componentData[componentId];
-            toValues[0] = array[slotBase];
-            toValues[1] = array[slotBase + 1];
-            toValues[2] = array[slotBase + 2];
-            toValues[3] = array[slotBase + 3];
-            toValues[4] = array[slotBase + 4];
-            toValues[5] = array[slotBase + 5];
-            return toValues;
+            toValues[offset]    = array[slotBase];
+            toValues[offset+1]  = array[slotBase + 1];
+            toValues[offset+2]  = array[slotBase + 2];
+            toValues[offset+3]  = array[slotBase + 3];
+            toValues[offset+4]  = array[slotBase + 4];
+            toValues[offset+5]  = array[slotBase + 5];
         }
 
-        getSlots(entityId, componentId, toValues) {
+        getSlots(entityId, componentId, toValues, offset) {
             let slotBase  = entityId * this.slotCount(componentId);
             let array     = this._componentData[componentId];
-            for (let offset = 0; offset < toValues.length; offset++) {
-                toValues[offset] = array[slotBase + offset];
+            for (let i = 0; i < toValues.length; i++) {
+                toValues[offset + i] = array[slotBase + i];
             }
-            return toValues;
         }
 
         setValue(entityId, componentId, value) {
