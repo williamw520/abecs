@@ -174,6 +174,15 @@ let abecs = (function() {
             return this._activeComponents[componentId].cardinality();
         }
 
+
+        getComponentArray(componentId) {
+            return this._componentData[componentId];
+        }
+
+        getSlotBase(entityId, componentId) {
+            return entityId * this.slotCount(componentId);
+        }
+
         getValue(entityId, componentId) {
             let slotIndex = entityId * this.slotCount(componentId);
             return this._componentData[componentId][slotIndex];
@@ -192,49 +201,49 @@ let abecs = (function() {
             toValues[offset+1]  = array[slotBase + 1];
         }
 
-        getSlots3(entityId, componentId, toValues, offset) {
+        getSlots3(entityId, componentId, toValues, toOffset) {
             let slotBase  = entityId * this.slotCount(componentId);
             let array     = this._componentData[componentId];
-            toValues[offset]    = array[slotBase];
-            toValues[offset+1]  = array[slotBase + 1];
-            toValues[offset+2]  = array[slotBase + 2];
+            toValues[toOffset]   = array[slotBase];
+            toValues[toOffset+1] = array[slotBase + 1];
+            toValues[toOffset+2] = array[slotBase + 2];
         }
 
-        getSlots4(entityId, componentId, toValues, offset) {
+        getSlots4(entityId, componentId, toValues, toOffset) {
             let slotBase  = entityId * this.slotCount(componentId);
             let array     = this._componentData[componentId];
-            toValues[offset]    = array[slotBase];
-            toValues[offset+1]  = array[slotBase + 1];
-            toValues[offset+2]  = array[slotBase + 2];
-            toValues[offset+3]  = array[slotBase + 3];
+            toValues[toOffset]   = array[slotBase];
+            toValues[toOffset+1] = array[slotBase + 1];
+            toValues[toOffset+2] = array[slotBase + 2];
+            toValues[toOffset+3] = array[slotBase + 3];
         }
 
-        getSlots5(entityId, componentId, toValues, offset) {
+        getSlots5(entityId, componentId, toValues, toOffset) {
             let slotBase  = entityId * this.slotCount(componentId);
             let array     = this._componentData[componentId];
-            toValues[offset]    = array[slotBase];
-            toValues[offset+1]  = array[slotBase + 1];
-            toValues[offset+2]  = array[slotBase + 2];
-            toValues[offset+3]  = array[slotBase + 3];
-            toValues[offset+4]  = array[slotBase + 4];
+            toValues[toOffset]   = array[slotBase];
+            toValues[toOffset+1] = array[slotBase + 1];
+            toValues[toOffset+2] = array[slotBase + 2];
+            toValues[toOffset+3] = array[slotBase + 3];
+            toValues[toOffset+4] = array[slotBase + 4];
         }
 
-        getSlots6(entityId, componentId, toValues, offset) {
+        getSlots6(entityId, componentId, toValues, toOffset) {
             let slotBase  = entityId * this.slotCount(componentId);
             let array     = this._componentData[componentId];
-            toValues[offset]    = array[slotBase];
-            toValues[offset+1]  = array[slotBase + 1];
-            toValues[offset+2]  = array[slotBase + 2];
-            toValues[offset+3]  = array[slotBase + 3];
-            toValues[offset+4]  = array[slotBase + 4];
-            toValues[offset+5]  = array[slotBase + 5];
+            toValues[toOffset]   = array[slotBase];
+            toValues[toOffset+1] = array[slotBase + 1];
+            toValues[toOffset+2] = array[slotBase + 2];
+            toValues[toOffset+3] = array[slotBase + 3];
+            toValues[toOffset+4] = array[slotBase + 4];
+            toValues[toOffset+5] = array[slotBase + 5];
         }
 
-        getSlots(entityId, componentId, toValues, offset) {
+        getSlots(entityId, componentId, toValues, toOffset) {
             let slotBase  = entityId * this.slotCount(componentId);
             let array     = this._componentData[componentId];
             for (let i = 0; i < toValues.length; i++) {
-                toValues[offset + i] = array[slotBase + i];
+                toValues[toOffset + i] = array[slotBase + i];
             }
         }
 
