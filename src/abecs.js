@@ -339,8 +339,17 @@ let abecs = (function() {
 
     }
 
-    const validArrayTypes = [ Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, 
-                              Int32Array, Uint32Array, Float32Array, Float64Array, BigInt64Array, BigUint64Array ];
+    // List of valid array types to check.
+    // Some browsers like Safari don't support some of the built-in types.
+    const validArrayTypes =
+          (typeof BigUint64Array != "undefined") && (typeof BigInt64Array != "undefined")
+          ? [ Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, 
+              Int32Array, Uint32Array, Float32Array, Float64Array, BigInt64Array, BigUint64Array ]
+          : [ Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, 
+              Int32Array, Uint32Array, Float32Array, Float64Array ];
+
+    // const validArrayTypes = [ Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, 
+    //                           Int32Array, Uint32Array, Float32Array, Float64Array, BigInt64Array, BigUint64Arrayx ];
 
     const range = (start, end) => Array.from({length: (end - start)}, (v, k) => k + start);
 
